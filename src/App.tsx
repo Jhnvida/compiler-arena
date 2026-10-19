@@ -1,3 +1,4 @@
+import { AlertCircle, Bot, ChevronDown, ChevronUp, Play, Plus, Trophy } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { compileTankScript, type CompilationResult } from "./compiler/compiler.ts";
 import { PRESET_HUNTER, PRESET_STRIKER } from "./compiler/presets.ts";
@@ -25,7 +26,7 @@ const INITIAL_TANKS: TankConfig[] = [
     {
         id: "tank-alpha",
         name: "Hunter Alpha",
-        color: "#06b6d4",
+        color: "#0284c7",
         code: PRESET_HUNTER,
     },
     {
@@ -83,6 +84,8 @@ export function App() {
     const [speed, setSpeed] = useState<number>(1);
     const [cameraMode, setCameraMode] = useState<CameraMode>("menu_orbit");
     const [showWinnerModal, setShowWinnerModal] = useState<boolean>(false);
+    const [menuPanelCollapsed, setMenuPanelCollapsed] = useState<boolean>(false);
+    const [menuErrorNotice, setMenuErrorNotice] = useState<string | null>(null);
 
     const engineRef = useRef<SimulationEngine | null>(null);
     const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -118,15 +121,18 @@ export function App() {
         }
 
         if (hasErrors) {
-            alert("Corrija os erros de compilação dos tanques antes de iniciar a batalha.");
+            setMenuErrorNotice("Corrija os erros de compilação dos tanques antes de iniciar a batalha.");
+            setTimeout(() => setMenuErrorNotice(null), 4000);
             return;
         }
 
         if (definitions.length < 2) {
-            alert("Adicione pelo menos 2 tanques para a batalha.");
+            setMenuErrorNotice("Adicione pelo menos 2 tanques para a batalha.");
+            setTimeout(() => setMenuErrorNotice(null), 4000);
             return;
         }
 
+        setMenuErrorNotice(null);
         const engine = new SimulationEngine();
         engine.initBattle(definitions);
         engine.start();
@@ -275,97 +281,134 @@ export function App() {
         inspectorTankIndex !== null && tanks[inspectorTankIndex] ? tanks[inspectorTankIndex].name : "";
 
     return (
-        <div className="relative w-screen h-screen overflow-hidden bg-slate-950 text-slate-100 select-none">
-            <ArenaCanvas
-                config={DEFAULT_ARENA_CONFIG}
-                snapshot={snapshot}
-                cameraMode={cameraMode}
-                isMenuBlurred={viewMode === "menu"}
-            />
+        <div className="relative w-screen h-screen overflow-hidden bg-neutral-950 text-neutral-100 select-none">
+            <ArenaCanvas config={DEFAULT_ARENA_CONFIG} snapshot={snapshot} cameraMode={cameraMode} />
 
             {viewMode === "menu" && (
-                <div className="relative z-20 w-full h-full flex flex-col justify-between p-6 overflow-y-auto">
-                    <header className="flex items-center justify-between py-2 px-6 bg-slate-900/60 backdrop-blur-lg border border-slate-800/80 rounded-2xl shadow-xl max-w-6xl mx-auto w-full">
-                        <div className="flex items-center gap-3">
-                            <span className="text-3xl">🤖</span>
+                <div className="relative z-20 w-full h-full flex flex-col justify-between pointer-events-none">
+                    <header className="pointer-events-auto flex items-center justify-between p-3.5 mx-4 mt-3 bg-neutral-900/90 backdrop-blur-md border border-neutral-800 rounded-lg shadow-sm">
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded bg-neutral-800 border border-neutral-700 flex items-center justify-center text-neutral-200">
+                                <Bot className="w-4 h-4" />
+                            </div>
                             <div>
-                                <h1 className="text-lg font-black tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400">
-                                    Compiler Arena 3D
+                                <h1 className="text-xs font-bold tracking-wider uppercase text-neutral-100">
+                                    Compiler Arena
                                 </h1>
-                                <p className="text-xs text-slate-400">
-                                    Compilador Didático & Máquina Virtual de Batalha de Tanques
+                                <p className="text-[10px] text-neutral-400 font-mono">
+                                    Compilador TankScript & VM Determinística
                                 </p>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2.5">
+                            <span className="hidden sm:inline-block px-2.5 py-1 text-[11px] font-mono text-neutral-400 bg-neutral-950 rounded border border-neutral-800">
+                                {tanks.length} / 4 Robôs
+                            </span>
+
                             {tanks.length < 4 && (
                                 <button
                                     type="button"
                                     onClick={handleAddTank}
-                                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors shadow-sm cursor-pointer"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 transition-colors cursor-pointer"
                                 >
-                                    <span>➕</span>
-                                    <span>Adicionar Tanque</span>
+                                    <Plus className="w-3.5 h-3.5" />
+                                    <span>Adicionar Robô</span>
                                 </button>
                             )}
 
                             <button
                                 type="button"
                                 onClick={handleStartBattle}
-                                className="flex items-center gap-2 px-6 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl text-slate-950 bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 shadow-lg shadow-cyan-500/25 transition-all transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                                className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded text-white bg-emerald-600 hover:bg-emerald-500 shadow-sm transition-colors cursor-pointer"
                             >
-                                <span>⚔️</span>
-                                <span>Iniciar Batalha 3D</span>
+                                <Play className="w-3.5 h-3.5 fill-current" />
+                                <span>Iniciar Batalha</span>
                             </button>
                         </div>
                     </header>
 
-                    <main className="my-auto py-6 max-w-6xl mx-auto w-full">
-                        <div
-                            className={`grid gap-6 ${
-                                tanks.length === 2
-                                    ? "grid-cols-2"
-                                    : tanks.length === 3
-                                      ? "grid-cols-3"
-                                      : "grid-cols-2 lg:grid-cols-4"
-                            }`}
-                        >
-                            {tanks.map((tank, idx) => (
-                                <TankEditorCard
-                                    key={tank.id}
-                                    tankIndex={idx}
-                                    name={tank.name}
-                                    setName={(newName) => {
-                                        setTanks((prev) =>
-                                            prev.map((t) => (t.id === tank.id ? { ...t, name: newName } : t)),
-                                        );
-                                    }}
-                                    color={tank.color}
-                                    setColor={(newColor) => {
-                                        setTanks((prev) =>
-                                            prev.map((t) => (t.id === tank.id ? { ...t, color: newColor } : t)),
-                                        );
-                                    }}
-                                    code={tank.code}
-                                    setCode={(newCode) => {
-                                        setTanks((prev) =>
-                                            prev.map((t) => (t.id === tank.id ? { ...t, code: newCode } : t)),
-                                        );
-                                        compileTank(tank.id, newCode);
-                                    }}
-                                    compilationResult={compilationResults[tank.id] ?? null}
-                                    onInspect={() => setInspectorTankIndex(idx)}
-                                    onRemove={() => handleRemoveTank(tank.id)}
-                                    canRemove={tanks.length > 2}
-                                />
-                            ))}
+                    {menuErrorNotice && (
+                        <div className="pointer-events-auto mx-auto mt-2 flex items-center gap-2 px-3.5 py-1.5 bg-rose-950/90 border border-rose-800 text-rose-200 text-xs rounded-md shadow-md animate-in fade-in">
+                            <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                            <span>{menuErrorNotice}</span>
                         </div>
-                    </main>
+                    )}
 
-                    <footer className="text-center text-xs text-slate-500 font-mono py-2">
-                        Trabalho de Compiladores • Seções 1 a 6 • Execução determinística por Bytecode VM
-                    </footer>
+                    <div className="pointer-events-auto p-4 max-w-7xl mx-auto w-full">
+                        <div className="bg-neutral-900/90 backdrop-blur-md border border-neutral-800 rounded-lg shadow-lg overflow-hidden">
+                            <div
+                                onClick={() => setMenuPanelCollapsed(!menuPanelCollapsed)}
+                                className="flex items-center justify-between px-3.5 py-2 bg-neutral-950/70 border-b border-neutral-800 cursor-pointer text-xs font-medium text-neutral-400 hover:text-neutral-200 transition-colors"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[11px] uppercase tracking-wider text-neutral-300 font-semibold">
+                                        Painel de Configuração dos Robôs
+                                    </span>
+                                    <span className="text-[10px] text-neutral-500 font-mono">
+                                        ({tanks.length} participantes configurados)
+                                    </span>
+                                </div>
+                                <button type="button" className="text-neutral-400 hover:text-white">
+                                    {menuPanelCollapsed ? (
+                                        <ChevronUp className="w-4 h-4" />
+                                    ) : (
+                                        <ChevronDown className="w-4 h-4" />
+                                    )}
+                                </button>
+                            </div>
+
+                            {!menuPanelCollapsed && (
+                                <div className="p-3 overflow-x-auto">
+                                    <div
+                                        className={`grid gap-3 ${
+                                            tanks.length === 2
+                                                ? "grid-cols-1 sm:grid-cols-2"
+                                                : tanks.length === 3
+                                                  ? "grid-cols-1 sm:grid-cols-3"
+                                                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+                                        }`}
+                                    >
+                                        {tanks.map((tank, idx) => (
+                                            <TankEditorCard
+                                                key={tank.id}
+                                                tankIndex={idx}
+                                                name={tank.name}
+                                                setName={(newName) => {
+                                                    setTanks((prev) =>
+                                                        prev.map((t) =>
+                                                            t.id === tank.id ? { ...t, name: newName } : t,
+                                                        ),
+                                                    );
+                                                }}
+                                                color={tank.color}
+                                                setColor={(newColor) => {
+                                                    setTanks((prev) =>
+                                                        prev.map((t) =>
+                                                            t.id === tank.id ? { ...t, color: newColor } : t,
+                                                        ),
+                                                    );
+                                                }}
+                                                code={tank.code}
+                                                setCode={(newCode) => {
+                                                    setTanks((prev) =>
+                                                        prev.map((t) =>
+                                                            t.id === tank.id ? { ...t, code: newCode } : t,
+                                                        ),
+                                                    );
+                                                    compileTank(tank.id, newCode);
+                                                }}
+                                                compilationResult={compilationResults[tank.id] ?? null}
+                                                onInspect={() => setInspectorTankIndex(idx)}
+                                                onRemove={() => handleRemoveTank(tank.id)}
+                                                canRemove={tanks.length > 2}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -384,19 +427,17 @@ export function App() {
             )}
 
             {viewMode === "battle" && snapshot && snapshot.status === "finished" && !showWinnerModal && (
-                <div className="absolute top-20 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-4 py-2 bg-slate-900/90 border border-amber-500/50 rounded-full shadow-2xl backdrop-blur-md animate-in fade-in duration-300">
-                    <span className="text-sm">🏆</span>
-                    <span className="text-xs font-bold text-amber-300">
-                        {snapshot.winner
-                            ? `${snapshot.winner.name} Venceu a Batalha!`
-                            : "Partida Finalizada em Empate!"}
+                <div className="absolute top-16 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2.5 px-3.5 py-1.5 bg-neutral-900/90 border border-neutral-700 rounded-md shadow-md backdrop-blur-md animate-in fade-in duration-200">
+                    <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="text-xs font-semibold text-neutral-200">
+                        {snapshot.winner ? `${snapshot.winner.name} venceu a batalha` : "Partida finalizada em empate"}
                     </span>
                     <button
                         type="button"
                         onClick={() => setShowWinnerModal(true)}
-                        className="px-3 py-1 rounded-full text-xs font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 transition-colors shadow-sm cursor-pointer"
+                        className="px-2.5 py-0.5 rounded text-[11px] font-medium bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 transition-colors cursor-pointer"
                     >
-                        Ver Estatísticas Finais
+                        Ver Resultado
                     </button>
                 </div>
             )}

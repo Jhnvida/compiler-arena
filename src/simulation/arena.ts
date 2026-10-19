@@ -119,6 +119,6 @@ export const DEFAULT_ARENA_CONFIG: ArenaConfig = {
     defaultTankEnergy: 100,
     tankRadius: 22,
     projectileSpeedBase: 12,
-    fireCooldownTicks: 3,
+    fireCooldownTicks: 6,
     maxInstructionsPerTick: 100,
 };

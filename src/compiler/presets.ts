@@ -1,70 +1,158 @@
-
-export const PRESET_HUNTER = `// Robô Hunter de Referência (Especificação Oficial do Professor)
+export const PRESET_HUNTER = `// Robô Hunter: Perseguição tática e combate calibrado
 robot Hunter {
-    int distancia;
+    int dist;
+    int step;
+    step = step + 1;
     
     scan();
-    if (enemy.visible) {
-        distancia = enemy.distance;
-        rotate(enemy.direction);
-        if (distancia < 120) {
-            fire(3);
-        } else {
-            fire(1);
+    if (position.x < 60 || position.x > 740 || position.y < 60 || position.y > 540) {
+        rotate(85);
+        move(20);
+    } else {
+        if ((position.x > 210 && position.x < 310 && position.y > 250 && position.y < 350) || (position.x > 490 && position.x < 590 && position.y > 250 && position.y < 350)) {
+            rotate(60);
             move(20);
-        }
-    } else {
-        rotate(30);
-        move(15);
-    }
-}
-`;
-
-export const PRESET_SNIPER = `// Robô Sniper Scout: Varredura contínua e disparos de longa distância
-robot SniperScout {
-    scan();
-    if (enemy.visible) {
-        rotate(enemy.direction);
-        if (enemy.distance > 150) {
-            fire(2);
         } else {
-            fire(3);
-            back(15);
+            if (enemy.visible) {
+                dist = enemy.distance;
+                rotate(enemy.direction);
+                if (dist < 100) {
+                    fire(3);
+                    back(15);
+                } else {
+                    if (dist < 220) {
+                        fire(2);
+                        move(15);
+                    } else {
+                        fire(1);
+                        move(25);
+                    }
+                }
+            } else {
+                if (step % 4 == 0) {
+                    rotate(50);
+                }
+                move(25);
+            }
         }
-    } else {
-        rotate(45);
     }
 }
 `;
 
-export const PRESET_STRIKER = `// Robô Aggressive Striker: Avança em direção ao alvo e atira com potência máxima
-robot AggressiveStriker {
-    scan();
-    if (enemy.visible) {
-        rotate(enemy.direction);
-        move(25);
-        fire(3);
-    } else {
-        move(30);
-        rotate(60);
-    }
-}
-`;
-
-export const PRESET_PATROL = `// Robô Wandering Patrol: Patrulha e navega pelo mapa
-robot WanderingPatrol {
-    int steps;
-    steps = steps + 1;
+export const PRESET_SNIPER = `// Robô Sniper Scout: Varredura de longo alcance e reposicionamento contínuo
+robot SniperScout {
+    int dist;
+    int step;
+    step = step + 1;
     
     scan();
-    if (enemy.visible) {
-        rotate(enemy.direction);
-        fire(2);
+    if (position.x < 120 || position.x > 680 || position.y < 110 || position.y > 490) {
+        rotate(90);
+        move(25);
     } else {
-        if (steps % 4 == 0) {
-            rotate(90);
+        if ((position.x > 210 && position.x < 310 && position.y > 250 && position.y < 350) || (position.x > 490 && position.x < 590 && position.y > 250 && position.y < 350)) {
+            rotate(75);
+            move(20);
+        } else {
+            if (enemy.visible) {
+                rotate(enemy.direction);
+                dist = enemy.distance;
+                if (dist < 160) {
+                    fire(2);
+                    back(20);
+                } else {
+                    if (dist > 350) {
+                        fire(1);
+                        move(15);
+                    } else {
+                        fire(2);
+                        if (step % 3 == 0) {
+                            rotate(25);
+                        }
+                        move(10);
+                    }
+                }
+            } else {
+                if (step % 5 == 0) {
+                    rotate(60);
+                }
+                move(20);
+            }
         }
-        move(15);
+    }
+}
+`;
+
+export const PRESET_STRIKER = `// Robô Aggressive Striker: Flanqueamento ofensivo e disparos potentes
+robot AggressiveStriker {
+    int dist;
+    int step;
+    step = step + 1;
+    
+    scan();
+    if (position.x < 60 || position.x > 740 || position.y < 60 || position.y > 540) {
+        rotate(95);
+        move(25);
+    } else {
+        if ((position.x > 210 && position.x < 310 && position.y > 250 && position.y < 350) || (position.x > 490 && position.x < 590 && position.y > 250 && position.y < 350)) {
+            rotate(70);
+            move(25);
+        } else {
+            if (enemy.visible) {
+                dist = enemy.distance;
+                rotate(enemy.direction);
+                if (dist > 220) {
+                    move(30);
+                    fire(2);
+                } else {
+                    fire(3);
+                    if (dist < 80) {
+                        back(15);
+                    } else {
+                        move(20);
+                    }
+                }
+            } else {
+                if (step % 3 == 0) {
+                    rotate(55);
+                }
+                move(30);
+            }
+        }
+    }
+}
+`;
+
+export const PRESET_PATROL = `// Robô Wandering Patrol: Patrulha tática e navegação pela arena
+robot WanderingPatrol {
+    int step;
+    step = step + 1;
+    
+    scan();
+    if (position.x < 60 || position.x > 740 || position.y < 60 || position.y > 540) {
+        rotate(90);
+        move(25);
+    } else {
+        if ((position.x > 210 && position.x < 310 && position.y > 250 && position.y < 350) || (position.x > 490 && position.x < 590 && position.y > 250 && position.y < 350)) {
+            rotate(60);
+            move(20);
+        } else {
+            if (enemy.visible) {
+                rotate(enemy.direction);
+                if (enemy.distance < 130) {
+                    fire(3);
+                    back(15);
+                } else {
+                    fire(2);
+                    move(15);
+                }
+            } else {
+                if (step % 5 == 0) {
+                    rotate(60);
+                }
+                move(22);
+            }
+        }
     }
 }
 `;

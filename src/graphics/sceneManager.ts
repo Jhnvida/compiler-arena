@@ -19,14 +19,15 @@ export class SceneManager {
     private lastTime = performance.now();
     private arenaConfig: ArenaConfig | null = null;
     private currentSnapshot: SimulationSnapshot | null = null;
+    private clouds: THREE.Group[] = [];
 
     public init(canvas: HTMLCanvasElement, config: ArenaConfig): void {
         this.dispose();
 
         this.arenaConfig = config;
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x060913);
-        this.scene.fog = new THREE.FogExp2(0x060913, 0.0007);
+        this.scene.background = new THREE.Color(0x7ec0ee);
+        this.scene.fog = new THREE.FogExp2(0x87ceeb, 0.00035);
 
         this.renderer = new THREE.WebGLRenderer({
             canvas,
@@ -42,35 +43,80 @@ export class SceneManager {
         const aspect = canvas.clientWidth / Math.max(canvas.clientHeight, 1);
         this.cameraController = new CameraController(aspect);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
-        this.scene.add(ambientLight);
+        const hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0x5a7d36, 0.7);
+        this.scene.add(hemiLight);
 
-        const dirLight = new THREE.DirectionalLight(0xfff7ed, 1.5);
-        dirLight.position.set(250, 450, 200);
-        dirLight.castShadow = true;
-        dirLight.shadow.mapSize.width = 2048;
-        dirLight.shadow.mapSize.height = 2048;
-        dirLight.shadow.camera.near = 10;
-        dirLight.shadow.camera.far = 1400;
-        dirLight.shadow.camera.left = -500;
-        dirLight.shadow.camera.right = 500;
-        dirLight.shadow.camera.top = 500;
-        dirLight.shadow.camera.bottom = -500;
-        dirLight.shadow.bias = -0.0003;
-        this.scene.add(dirLight);
+        const sunLight = new THREE.DirectionalLight(0xfffaeb, 1.65);
+        sunLight.position.set(280, 500, 220);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        sunLight.shadow.camera.near = 10;
+        sunLight.shadow.camera.far = 1600;
+        sunLight.shadow.camera.left = -550;
+        sunLight.shadow.camera.right = 550;
+        sunLight.shadow.camera.top = 550;
+        sunLight.shadow.camera.bottom = -550;
+        sunLight.shadow.bias = -0.0003;
+        this.scene.add(sunLight);
 
-        const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.45);
-        fillLight.position.set(-250, 200, -200);
+        const fillLight = new THREE.DirectionalLight(0xbae6fd, 0.35);
+        fillLight.position.set(-260, 250, -220);
         this.scene.add(fillLight);
 
         this.arenaController = new ArenaMeshController(config);
         this.scene.add(this.arenaController.group);
+
+        this.createLowPolyClouds();
 
         this.particleManager = new ParticleSystemManager();
         this.scene.add(this.particleManager.group);
 
         this.lastTime = performance.now();
         this.loop();
+    }
+
+    private createLowPolyClouds(): void {
+        const cloudMat = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            roughness: 0.9,
+            metalness: 0.0,
+            flatShading: true,
+            transparent: true,
+            opacity: 0.88,
+        });
+
+        const cloudConfigs = [
+            { x: -350, y: 320, z: -250, scale: 1.2 },
+            { x: 220, y: 360, z: -320, scale: 1.5 },
+            { x: -180, y: 340, z: 280, scale: 1.1 },
+            { x: 380, y: 310, z: 220, scale: 1.3 },
+            { x: 0, y: 380, z: -150, scale: 1.4 },
+        ];
+
+        for (const cfg of cloudConfigs) {
+            const cloudGroup = new THREE.Group();
+            cloudGroup.position.set(cfg.x, cfg.y, cfg.z);
+
+            const parts = [
+                { x: 0, y: 0, z: 0, r: 24 },
+                { x: 20, y: -2, z: 0, r: 18 },
+                { x: -20, y: -2, z: 2, r: 17 },
+                { x: 8, y: 10, z: -2, r: 15 },
+                { x: -10, y: 8, z: 4, r: 14 },
+            ];
+
+            for (const p of parts) {
+                const geo = new THREE.DodecahedronGeometry(p.r * cfg.scale, 0);
+                const mesh = new THREE.Mesh(geo, cloudMat);
+                mesh.position.set(p.x * cfg.scale, p.y * cfg.scale, p.z * cfg.scale);
+                mesh.scale.set(1.3, 0.7, 1);
+                cloudGroup.add(mesh);
+            }
+
+            this.scene?.add(cloudGroup);
+            this.clouds.push(cloudGroup);
+        }
     }
 
     public setCameraMode(mode: "menu_orbit" | "combat" | "victory"): void {
@@ -198,6 +244,13 @@ export class SceneManager {
             }
         }
 
+        for (const cloud of this.clouds) {
+            cloud.position.x += delta * 7;
+            if (cloud.position.x > 650) {
+                cloud.position.x = -650;
+            }
+        }
+
         this.cameraController.update(delta, tanks, winner, width, height);
 
         this.particleManager?.update(delta);
@@ -221,6 +274,17 @@ export class SceneManager {
             ctrl.dispose();
         }
         this.tankControllers.clear();
+
+        for (const cloud of this.clouds) {
+            cloud.traverse((c) => {
+                if (c instanceof THREE.Mesh) {
+                    c.geometry.dispose();
+                    if (Array.isArray(c.material)) c.material.forEach((m) => m.dispose());
+                    else c.material.dispose();
+                }
+            });
+        }
+        this.clouds = [];
 
         this.arenaController?.dispose();
         this.arenaController = null;

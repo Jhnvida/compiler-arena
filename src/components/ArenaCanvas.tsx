@@ -7,10 +7,9 @@ interface ArenaCanvasProps {
     config: ArenaConfig;
     snapshot: SimulationSnapshot | null;
     cameraMode: CameraMode;
-    isMenuBlurred: boolean;
 }
 
-export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({ config, snapshot, cameraMode, isMenuBlurred }) => {
+export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({ config, snapshot, cameraMode }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const sceneManagerRef = useRef<SceneManager | null>(null);
 
@@ -50,11 +49,7 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({ config, snapshot, came
     }, [cameraMode]);
 
     return (
-        <div
-            className={`absolute inset-0 w-full h-full pointer-events-none transition-all duration-700 ease-in-out ${
-                isMenuBlurred ? "filter blur-md scale-[1.03] opacity-80" : "filter-none scale-100 opacity-100"
-            }`}
-        >
+        <div className="absolute inset-0 w-full h-full pointer-events-none">
             <canvas ref={canvasRef} className="w-full h-full block" />
         </div>
     );

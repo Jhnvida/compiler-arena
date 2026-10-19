@@ -23,28 +23,27 @@ export class TankMeshController {
 
         const color = new THREE.Color(tank.color);
         const darkMetal = new THREE.MeshStandardMaterial({
-            color: 0x1e222d,
-            roughness: 0.7,
-            metalness: 0.6,
+            color: 0x27272a,
+            roughness: 0.8,
+            metalness: 0.3,
             flatShading: true,
         });
 
         const armorMat = new THREE.MeshStandardMaterial({
             color,
-            roughness: 0.35,
-            metalness: 0.25,
+            roughness: 0.45,
+            metalness: 0.2,
             flatShading: true,
         });
         this.armorMaterials.push(armorMat);
 
-        const glowMat = new THREE.MeshStandardMaterial({
-            color,
-            emissive: color,
-            emissiveIntensity: 0.8,
-            roughness: 0.2,
-            metalness: 0.5,
+        const accentMat = new THREE.MeshStandardMaterial({
+            color: 0x3f3f46,
+            roughness: 0.6,
+            metalness: 0.35,
+            flatShading: true,
         });
-        this.armorMaterials.push(glowMat);
+        this.armorMaterials.push(accentMat);
 
         const chassisGeo = new THREE.BoxGeometry(32, 9, 24);
         const chassisMesh = new THREE.Mesh(chassisGeo, armorMat);
@@ -62,14 +61,16 @@ export class TankMeshController {
         wedgeMesh.castShadow = true;
         this.group.add(wedgeMesh);
 
-        const stripGeo = new THREE.BoxGeometry(22, 1.5, 0.5);
-        const stripL = new THREE.Mesh(stripGeo, glowMat);
-        stripL.position.set(0, 8, 12.3);
-        this.group.add(stripL);
+        const skirtGeo = new THREE.BoxGeometry(26, 3, 1);
+        const skirtL = new THREE.Mesh(skirtGeo, accentMat);
+        skirtL.position.set(0, 7.5, 12.5);
+        skirtL.castShadow = true;
+        this.group.add(skirtL);
 
-        const stripR = new THREE.Mesh(stripGeo, glowMat);
-        stripR.position.set(0, 8, -12.3);
-        this.group.add(stripR);
+        const skirtR = new THREE.Mesh(skirtGeo, accentMat);
+        skirtR.position.set(0, 7.5, -12.5);
+        skirtR.castShadow = true;
+        this.group.add(skirtR);
 
         const trackGeo = new THREE.BoxGeometry(38, 7, 6);
         const leftTrack = new THREE.Mesh(trackGeo, darkMetal);
@@ -86,9 +87,9 @@ export class TankMeshController {
 
         const wheelGeo = new THREE.CylinderGeometry(2.8, 2.8, 1, 8);
         const wheelMat = new THREE.MeshStandardMaterial({
-            color: 0x334155,
-            roughness: 0.6,
-            metalness: 0.8,
+            color: 0x52525b,
+            roughness: 0.7,
+            metalness: 0.4,
             flatShading: true,
         });
 
@@ -97,6 +98,7 @@ export class TankMeshController {
                 const wheel = new THREE.Mesh(wheelGeo, wheelMat);
                 wheel.rotation.x = Math.PI / 2;
                 wheel.position.set(x, 3.2, z > 0 ? 14 + 3.1 : -14 - 3.1);
+                wheel.castShadow = true;
                 this.group.add(wheel);
             }
         }
@@ -113,12 +115,14 @@ export class TankMeshController {
         const hatchGeo = new THREE.CylinderGeometry(3.5, 3.5, 1.5, 8);
         const hatch = new THREE.Mesh(hatchGeo, darkMetal);
         hatch.position.set(-2, 3.5, 0);
+        hatch.castShadow = true;
         this.turretGroup.add(hatch);
 
-        const visorGeo = new THREE.BoxGeometry(2, 1.2, 7);
-        const visor = new THREE.Mesh(visorGeo, glowMat);
-        visor.position.set(8.5, 1, 0);
-        this.turretGroup.add(visor);
+        const mantletGeo = new THREE.BoxGeometry(4, 5, 8);
+        const mantlet = new THREE.Mesh(mantletGeo, accentMat);
+        mantlet.position.set(9, 1, 0);
+        mantlet.castShadow = true;
+        this.turretGroup.add(mantlet);
 
         const barrelGeo = new THREE.CylinderGeometry(1.6, 2.2, 22, 8);
         this.barrelMesh = new THREE.Mesh(barrelGeo, darkMetal);
@@ -131,6 +135,7 @@ export class TankMeshController {
         const muzzle = new THREE.Mesh(muzzleGeo, darkMetal);
         muzzle.rotation.z = -Math.PI / 2;
         muzzle.position.set(24, 1, 0);
+        muzzle.castShadow = true;
         this.turretGroup.add(muzzle);
 
         this.group.add(this.turretGroup);
@@ -140,20 +145,20 @@ export class TankMeshController {
 
         const barBgGeo = new THREE.PlaneGeometry(28, 3.5);
         const barBgMat = new THREE.MeshBasicMaterial({
-            color: 0x0f172a,
+            color: 0x18181b,
             side: THREE.DoubleSide,
             transparent: true,
-            opacity: 0.85,
+            opacity: 0.8,
         });
         const barBg = new THREE.Mesh(barBgGeo, barBgMat);
         this.healthBarGroup.add(barBg);
 
         const barBorderGeo = new THREE.PlaneGeometry(29, 4.5);
         const barBorderMat = new THREE.MeshBasicMaterial({
-            color: 0x334155,
+            color: 0x3f3f46,
             side: THREE.DoubleSide,
             transparent: true,
-            opacity: 0.6,
+            opacity: 0.7,
         });
         const barBorder = new THREE.Mesh(barBorderGeo, barBorderMat);
         barBorder.position.z = -0.05;
@@ -162,7 +167,7 @@ export class TankMeshController {
         const barFillGeo = new THREE.PlaneGeometry(26, 2.5);
         barFillGeo.translate(13, 0, 0);
         const barFillMat = new THREE.MeshBasicMaterial({
-            color: 0x22c55e,
+            color: 0x16a34a,
             side: THREE.DoubleSide,
         });
         this.healthBarFill = new THREE.Mesh(barFillGeo, barFillMat);
@@ -172,26 +177,21 @@ export class TankMeshController {
         this.group.add(this.healthBarGroup);
 
         const beaconGroup = new THREE.Group();
-        beaconGroup.position.set(0, 32, 0);
+        beaconGroup.position.set(0, 30, 0);
         beaconGroup.visible = false;
         beaconGroup.name = "victory_beacon";
 
-        const ringGeo = new THREE.TorusGeometry(12, 1.2, 8, 24);
-        const goldMat = new THREE.MeshStandardMaterial({
-            color: 0xfacc15,
-            emissive: 0xeab308,
-            emissiveIntensity: 1.2,
-            roughness: 0.2,
-            metalness: 0.9,
+        const starMat = new THREE.MeshStandardMaterial({
+            color: 0xeab308,
+            roughness: 0.3,
+            metalness: 0.5,
+            flatShading: true,
         });
-        const ringMesh = new THREE.Mesh(ringGeo, goldMat);
-        ringMesh.rotation.x = Math.PI / 2;
-        beaconGroup.add(ringMesh);
 
-        const diamondGeo = new THREE.OctahedronGeometry(4.5, 0);
-        const diamondMesh = new THREE.Mesh(diamondGeo, goldMat);
-        diamondMesh.position.y = 2;
-        beaconGroup.add(diamondMesh);
+        const starGeo = new THREE.OctahedronGeometry(5, 0);
+        const starMesh = new THREE.Mesh(starGeo, starMat);
+        starMesh.scale.set(1.2, 1.4, 0.6);
+        beaconGroup.add(starMesh);
 
         this.group.add(beaconGroup);
         this.victoryBeacon = beaconGroup;
@@ -202,7 +202,7 @@ export class TankMeshController {
     }
 
     public triggerRecoil(): void {
-        this.targetRecoil = -3.5;
+        this.targetRecoil = -3.8;
     }
 
     public update(
@@ -223,6 +223,12 @@ export class TankMeshController {
         while (diff > Math.PI) diff -= Math.PI * 2;
         this.group.rotation.y += diff * 0.3;
 
+        const targetTurretWorld = simAngleToWorldRotation(tank.turretAngle);
+        let turretDiff = targetTurretWorld - this.group.rotation.y - this.turretGroup.rotation.y;
+        while (turretDiff < -Math.PI) turretDiff += Math.PI * 2;
+        while (turretDiff > Math.PI) turretDiff -= Math.PI * 2;
+        this.turretGroup.rotation.y += turretDiff * 0.4;
+
         this.recoilOffset += (this.targetRecoil - this.recoilOffset) * 0.4;
         this.targetRecoil *= 0.65;
         this.barrelMesh.position.x = 13 + this.recoilOffset;
@@ -233,17 +239,18 @@ export class TankMeshController {
         this.healthBarFill.scale.x = hpRatio;
 
         const fillMat = this.healthBarFill.material as THREE.MeshBasicMaterial;
-        if (hpRatio > 0.6) {
-            fillMat.color.setHex(0x22c55e);
+        if (hpRatio > 0.5) {
+            fillMat.color.setHex(0x16a34a);
         } else if (hpRatio > 0.25) {
-            fillMat.color.setHex(0xeab308);
+            fillMat.color.setHex(0xd97706);
         } else {
-            fillMat.color.setHex(0xef4444);
+            fillMat.color.setHex(0xdc2626);
         }
 
         if (isWinner && tank.isAlive) {
             this.victoryBeacon.visible = true;
-            this.victoryBeacon.rotation.y += delta * 2.5;
+            this.victoryBeacon.rotation.y += delta * 2.2;
+            this.victoryBeacon.position.y = 30 + Math.sin(performance.now() * 0.004) * 2;
         } else {
             this.victoryBeacon.visible = false;
         }
@@ -254,15 +261,13 @@ export class TankMeshController {
             this.victoryBeacon.visible = false;
 
             for (const mat of this.armorMaterials) {
-                mat.color.setHex(0x18181b);
-                if ("emissive" in mat) {
-                    mat.emissive.setHex(0x000000);
-                    mat.emissiveIntensity = 0;
-                }
+                mat.color.setHex(0x27272a);
+                mat.roughness = 0.9;
+                mat.metalness = 0.1;
             }
 
-            this.group.rotation.z = 0.15;
-            this.group.rotation.x = -0.1;
+            this.group.rotation.z = 0.14;
+            this.group.rotation.x = -0.08;
         }
     }
 

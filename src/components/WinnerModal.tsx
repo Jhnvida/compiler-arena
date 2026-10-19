@@ -1,3 +1,4 @@
+import { ArrowLeft, Eye, RotateCcw, Scale, Trophy } from "lucide-react";
 import React from "react";
 import type { SimulationSnapshot } from "../simulation/types.ts";
 
@@ -21,77 +22,83 @@ export const WinnerModal: React.FC<WinnerModalProps> = ({ snapshot, onRestart, o
         : 0;
 
     return (
-        <div className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in zoom-in-95 duration-300">
-            <div className="w-full max-w-md bg-slate-900/90 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden p-6 text-center text-white backdrop-blur-md">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-gradient-to-tr from-amber-500/20 to-yellow-400/20 border border-yellow-500/40 text-3xl shadow-lg shadow-amber-500/10">
-                    {isDraw ? "⚖️" : "🏆"}
+        <div className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="w-full max-w-sm bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl overflow-hidden p-5 text-center text-neutral-100">
+                <div className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center bg-neutral-800 border border-neutral-700 text-neutral-300">
+                    {isDraw ? (
+                        <Scale className="w-6 h-6 text-neutral-400" />
+                    ) : (
+                        <Trophy className="w-6 h-6 text-amber-400" />
+                    )}
                 </div>
 
-                <h2 className="text-2xl font-black tracking-tight mb-1">
-                    {isDraw ? "Empate Técnico!" : "Vitória na Arena!"}
+                <h2 className="text-base font-bold tracking-tight mb-1">
+                    {isDraw ? "Empate Técnico" : "Vitória na Arena"}
                 </h2>
 
                 {isDraw ? (
-                    <p className="text-sm text-slate-400 mb-6">
+                    <p className="text-xs text-neutral-400 mb-4">
                         Todos os tanques foram destruídos ou a partida atingiu o tempo limite com energia equivalente.
                     </p>
                 ) : (
-                    <div className="mb-6">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 mb-2">
-                            <span className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: winner.color }} />
-                            <span className="text-sm font-bold text-white">{winner.name}</span>
+                    <div className="mb-4">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-950 border border-neutral-800 mb-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: winner.color }} />
+                            <span className="text-xs font-semibold text-white">{winner.name}</span>
                         </div>
-                        <p className="text-xs text-slate-400">
-                            O robô sobreviveu ao combate e superou todos os adversários na simulação.
+                        <p className="text-[11px] text-neutral-400">
+                            Sobreviveu ao combate e superou todos os adversários na arena.
                         </p>
                     </div>
                 )}
 
                 {winner && (
-                    <div className="grid grid-cols-3 gap-2.5 p-3.5 bg-slate-950/70 rounded-xl border border-slate-800 mb-6 text-xs">
+                    <div className="grid grid-cols-3 gap-2 p-3 bg-neutral-950 rounded border border-neutral-800 mb-4 text-xs font-mono">
                         <div>
-                            <span className="text-slate-400 text-[10px]">Energia Final</span>
-                            <p className="text-base font-bold text-emerald-400">{winner.energy} HP</p>
+                            <span className="text-neutral-500 text-[10px] block font-sans">Energia</span>
+                            <span className="text-sm font-bold text-emerald-400">{winner.energy} HP</span>
                         </div>
                         <div>
-                            <span className="text-slate-400 text-[10px]">Precisão</span>
-                            <p className="text-base font-bold text-cyan-400">{accuracy}%</p>
+                            <span className="text-neutral-500 text-[10px] block font-sans">Precisão</span>
+                            <span className="text-sm font-bold text-neutral-200">{accuracy}%</span>
                         </div>
                         <div>
-                            <span className="text-slate-400 text-[10px]">Dano Total</span>
-                            <p className="text-base font-bold text-amber-400">{winner.stats.damageDealt}</p>
+                            <span className="text-neutral-500 text-[10px] block font-sans">Dano Total</span>
+                            <span className="text-sm font-bold text-neutral-200">{winner.stats.damageDealt}</span>
                         </div>
                         <div>
-                            <span className="text-slate-400 text-[10px]">Disparos</span>
-                            <p className="text-sm font-semibold text-slate-200">{winner.stats.shotsFired}</p>
+                            <span className="text-neutral-500 text-[10px] block font-sans">Disparos</span>
+                            <span className="text-xs font-semibold text-neutral-300">{winner.stats.shotsFired}</span>
                         </div>
                         <div>
-                            <span className="text-slate-400 text-[10px]">Acertos</span>
-                            <p className="text-sm font-semibold text-slate-200">{winner.stats.shotsHit}</p>
+                            <span className="text-neutral-500 text-[10px] block font-sans">Acertos</span>
+                            <span className="text-xs font-semibold text-neutral-300">{winner.stats.shotsHit}</span>
                         </div>
                         <div>
-                            <span className="text-slate-400 text-[10px]">Eliminações</span>
-                            <p className="text-sm font-semibold text-purple-400">{winner.stats.kills}</p>
+                            <span className="text-neutral-500 text-[10px] block font-sans">Eliminações</span>
+                            <span className="text-xs font-semibold text-neutral-300">{winner.stats.kills}</span>
                         </div>
                     </div>
                 )}
 
-                <div className="flex flex-col gap-2.5">
-                    <div className="flex items-center gap-3">
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
                         <button
                             type="button"
                             onClick={onRestart}
-                            className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold text-slate-950 bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 shadow-lg shadow-cyan-500/20 transition-all cursor-pointer"
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors cursor-pointer"
                         >
-                            🔄 Nova Revanche
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>Nova Revanche</span>
                         </button>
 
                         <button
                             type="button"
                             onClick={onReturnToMenu}
-                            className="flex-1 py-2.5 px-4 rounded-xl text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded text-xs font-medium text-neutral-300 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 transition-colors cursor-pointer"
                         >
-                            ⚙ Editor / Menu
+                            <ArrowLeft className="w-3.5 h-3.5" />
+                            <span>Menu / Editor</span>
                         </button>
                     </div>
 
@@ -99,9 +106,10 @@ export const WinnerModal: React.FC<WinnerModalProps> = ({ snapshot, onRestart, o
                         <button
                             type="button"
                             onClick={onViewArena}
-                            className="w-full py-2 px-3 rounded-lg text-xs font-medium text-cyan-300 bg-cyan-950/40 hover:bg-cyan-950/80 border border-cyan-800/50 transition-colors cursor-pointer"
+                            className="flex items-center justify-center gap-1.5 w-full py-1.5 px-3 rounded text-xs font-medium text-neutral-400 hover:text-white bg-neutral-950/60 hover:bg-neutral-950 border border-neutral-800 transition-colors cursor-pointer"
                         >
-                            👁️ Observar Tanque Vencedor na Arena 3D
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Observar Arena</span>
                         </button>
                     )}
                 </div>

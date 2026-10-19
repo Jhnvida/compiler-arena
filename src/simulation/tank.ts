@@ -75,19 +75,35 @@ export function findSafeSpawn(
     width: number,
     height: number,
     radius: number,
-    maxAttempts: number = 200,
+    maxAttempts: number = 300,
 ): { x: number; y: number; angle: number } {
-    const margin = radius + 30;
+    const margin = radius + 48;
+    const minSeparation = existingTanks.length <= 1 ? 300 : 210;
+
+    const sectors = [
+        { minX: margin, maxX: width / 2 - 80, minY: margin, maxY: height / 2 - 60 },
+        { minX: width / 2 + 80, maxX: width - margin, minY: height / 2 + 60, maxY: height - margin },
+        { minX: width / 2 + 80, maxX: width - margin, minY: margin, maxY: height / 2 - 60 },
+        { minX: margin, maxX: width / 2 - 80, minY: height / 2 + 60, maxY: height - margin },
+    ];
+
+    const currentSector = sectors[existingTanks.length % sectors.length];
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const x = margin + Math.random() * (width - 2 * margin);
-        const y = margin + Math.random() * (height - 2 * margin);
+        const useSector = attempt < 180 && currentSector;
+        const minX = useSector ? currentSector.minX : margin;
+        const maxX = useSector ? currentSector.maxX : width - margin;
+        const minY = useSector ? currentSector.minY : margin;
+        const maxY = useSector ? currentSector.maxY : height - margin;
+
+        const x = minX + Math.random() * Math.max(10, maxX - minX);
+        const y = minY + Math.random() * Math.max(10, maxY - minY);
         const candidate = { x, y };
 
         let collides = false;
 
         for (const obs of obstacles) {
-            if (circleIntersectsAABB(candidate, radius + 15, obs)) {
+            if (circleIntersectsAABB(candidate, radius + 25, obs)) {
                 collides = true;
                 break;
             }
@@ -96,27 +112,28 @@ export function findSafeSpawn(
         if (collides) continue;
 
         for (const other of existingTanks) {
-            if (circleIntersectsCircle(candidate, radius + 40, { x: other.x, y: other.y }, other.radius)) {
+            if (distance(candidate, { x: other.x, y: other.y }) < minSeparation) {
                 collides = true;
                 break;
             }
         }
 
         if (!collides) {
-            const angle = Math.floor(Math.random() * 360);
+            const centerAngle = angleBetween(candidate, { x: width / 2, y: height / 2 });
+            const angleJitter = (Math.random() - 0.5) * 40;
+            const angle = Math.round(normalizeAngle(centerAngle + angleJitter));
             return { x: Math.round(x), y: Math.round(y), angle };
         }
     }
 
     const fallbackSpots = [
-        { x: 100, y: 100, angle: 45 },
-        { x: width - 100, y: height - 100, angle: 225 },
-        { x: width - 100, y: 100, angle: 135 },
-        { x: 100, y: height - 100, angle: 315 },
+        { x: 140, y: 140, angle: 45 },
+        { x: width - 140, y: height - 140, angle: 225 },
+        { x: width - 140, y: 140, angle: 135 },
+        { x: 140, y: height - 140, angle: 315 },
     ];
 
-    const spot = fallbackSpots[existingTanks.length % fallbackSpots.length];
-    return spot;
+    return fallbackSpots[existingTanks.length % fallbackSpots.length];
 }
 
 export function scanForEnemies(

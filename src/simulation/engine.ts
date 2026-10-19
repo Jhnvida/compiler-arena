@@ -98,7 +98,7 @@ export class SimulationEngine {
             const tank = createSimulatedTank(def.id, def.name, def.color, def.program, x, y, angle, this.config);
 
             this.tanks.push(tank);
-            this.emitEvent("tank_spawn", `🤖 ${tank.name} entrou na arena na posição (${x}, ${y})`, {
+            this.emitEvent("tank_spawn", `${tank.name} entrou na arena na posição (${x}, ${y})`, {
                 tankId: tank.id,
                 x,
                 y,
@@ -149,7 +149,7 @@ export class SimulationEngine {
             const stepRes = updateProjectile(proj, this.config);
 
             if (stepRes.hitType === "wall") {
-                this.emitEvent("projectile_hit_wall", `💨 Projétil atingiu a barreira da arena`, {
+                this.emitEvent("projectile_hit_wall", `Projétil atingiu a barreira da arena`, {
                     projectileId: proj.id,
                     x: proj.x,
                     y: proj.y,
@@ -158,7 +158,7 @@ export class SimulationEngine {
             }
 
             if (stepRes.hitType === "obstacle") {
-                this.emitEvent("projectile_hit_obstacle", `🧱 Projétil colidiu contra o obstáculo`, {
+                this.emitEvent("projectile_hit_obstacle", `Projétil colidiu contra obstáculo`, {
                     projectileId: proj.id,
                     x: proj.x,
                     y: proj.y,
@@ -187,7 +187,7 @@ export class SimulationEngine {
 
                     this.emitEvent(
                         "projectile_hit_tank",
-                        `💥 ${owner?.name ?? "Projétil"} acertou ${tank.name} causando ${proj.damage} de dano! (${tank.energy} HP restantes)`,
+                        `${owner?.name ?? "Projétil"} acertou ${tank.name} causando ${proj.damage} de dano (${tank.energy} HP restantes)`,
                         {
                             tankId: proj.ownerId,
                             targetTankId: tank.id,
@@ -203,7 +203,7 @@ export class SimulationEngine {
                         if (owner) {
                             owner.stats.kills++;
                         }
-                        this.emitEvent("tank_destroyed", `💀 O tanque ${tank.name} foi destruído!`, {
+                        this.emitEvent("tank_destroyed", `O tanque ${tank.name} foi destruído`, {
                             tankId: tank.id,
                             x: tank.x,
                             y: tank.y,
@@ -250,7 +250,7 @@ export class SimulationEngine {
                         if (moveRes.collided) {
                             this.emitEvent(
                                 "tank_collide_obstacle",
-                                `⚠️ ${tank.name} colidiu contra ${moveRes.colliderType === "wall" ? "a barreira" : moveRes.colliderType === "tank" ? "outro tanque" : "um obstáculo"}`,
+                                `${tank.name} colidiu contra ${moveRes.colliderType === "wall" ? "a barreira" : moveRes.colliderType === "tank" ? "outro tanque" : "um obstáculo"}`,
                                 { tankId: tank.id, x: tank.x, y: tank.y },
                             );
                         }
@@ -261,7 +261,7 @@ export class SimulationEngine {
                         const dist = -(action.value ?? 10);
                         const moveRes = applyTankMovement(tank, dist, this.tanks, this.config);
                         if (moveRes.collided) {
-                            this.emitEvent("tank_collide_obstacle", `⚠️ ${tank.name} bateu em marcha à ré`, {
+                            this.emitEvent("tank_collide_obstacle", `${tank.name} colidiu em marcha ré`, {
                                 tankId: tank.id,
                                 x: tank.x,
                                 y: tank.y,
@@ -278,7 +278,7 @@ export class SimulationEngine {
                     }
 
                     case "scan": {
-                        this.emitEvent("tank_scan", `📡 ${tank.name} acionou os sensores de radar`, {
+                        this.emitEvent("tank_scan", `${tank.name} realizou varredura de radar`, {
                             tankId: tank.id,
                             x: tank.x,
                             y: tank.y,
@@ -307,7 +307,7 @@ export class SimulationEngine {
                             tank.stats.shotsFired++;
                             tank.cooldown = this.config.fireCooldownTicks;
 
-                            this.emitEvent("tank_fire", `🎯 ${tank.name} disparou com potência ${proj.power}!`, {
+                            this.emitEvent("tank_fire", `${tank.name} disparou com potência ${proj.power}`, {
                                 tankId: tank.id,
                                 projectileId: proj.id,
                                 value: proj.power,
@@ -334,7 +334,7 @@ export class SimulationEngine {
             this.winner = aliveTanks[0];
             this.isDraw = false;
             this.status = "finished";
-            this.emitEvent("battle_end", `🏆 Vitória! O tanque ${this.winner.name} venceu a batalha!`, {
+            this.emitEvent("battle_end", `Vitória: o tanque ${this.winner.name} venceu a batalha`, {
                 tankId: this.winner.id,
             });
             return;
@@ -344,7 +344,7 @@ export class SimulationEngine {
             this.winner = null;
             this.isDraw = true;
             this.status = "finished";
-            this.emitEvent("battle_end", `⚖️ Empate! Todos os tanques foram destruídos!`);
+            this.emitEvent("battle_end", `Empate: todos os tanques foram destruídos`);
             return;
         }
 
@@ -354,13 +354,13 @@ export class SimulationEngine {
             if (aliveTanks.length > 1 && aliveTanks[0].energy === aliveTanks[1].energy) {
                 this.winner = null;
                 this.isDraw = true;
-                this.emitEvent("battle_end", `⏱️ Tempo esgotado! Batalha empatada em pontos de energia.`);
+                this.emitEvent("battle_end", `Tempo esgotado: batalha empatada em pontos de energia`);
             } else if (aliveTanks.length > 0) {
                 this.winner = aliveTanks[0];
                 this.isDraw = false;
                 this.emitEvent(
                     "battle_end",
-                    `⏱️ Tempo esgotado! ${this.winner.name} venceu com maior energia restante (${this.winner.energy} HP)!`,
+                    `Tempo esgotado: ${this.winner.name} venceu com maior energia restante (${this.winner.energy} HP)`,
                     { tankId: this.winner.id },
                 );
             }

@@ -30,8 +30,8 @@ export class CameraController {
             this.isTransitioning = true;
             gsap.to(this.camera.position, {
                 x: 0,
-                y: 420,
-                z: 460,
+                y: 440,
+                z: 520,
                 duration: 1.4,
                 ease: "power2.inOut",
                 onComplete: () => {
@@ -130,15 +130,18 @@ export class CameraController {
                 }
 
                 const count = aliveTanks.length;
-                const centerX = sumX / count;
-                const centerZ = sumZ / count;
+                const rawCenterX = sumX / count;
+                const rawCenterZ = sumZ / count;
+
+                const centerX = Math.max(-120, Math.min(120, rawCenterX));
+                const centerZ = Math.max(-90, Math.min(90, rawCenterZ));
 
                 const spanX = maxX - minX;
                 const spanZ = maxZ - minZ;
-                const maxSpan = Math.max(spanX, spanZ, 200);
+                const maxSpan = Math.max(spanX, spanZ, 220);
 
-                const dist = 320 + maxSpan * 0.55;
-                const height = 280 + maxSpan * 0.45;
+                const dist = Math.max(460, 360 + maxSpan * 0.52);
+                const height = Math.max(380, 300 + maxSpan * 0.42);
 
                 this.desiredTarget.set(centerX, 0, centerZ);
                 this.desiredPosition.set(centerX, height, centerZ + dist);
