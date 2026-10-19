@@ -7,14 +7,14 @@ export class TankMeshController {
     public readonly group: THREE.Group;
     public readonly turretGroup: THREE.Group;
     public readonly barrelMesh: THREE.Mesh;
-    public readonly healthBarFill: THREE.Mesh;
-    public readonly healthBarGroup: THREE.Group;
     public readonly victoryBeacon: THREE.Group;
     public readonly armorMaterials: THREE.MeshStandardMaterial[] = [];
 
     private isDead = false;
     private recoilOffset = 0;
     private targetRecoil = 0;
+    private readonly originalArmorColor: THREE.Color;
+    private readonly originalAccentColor: THREE.Color;
 
     constructor(tank: SimulatedTank, arenaWidth: number, arenaHeight: number) {
         this.id = tank.id;
@@ -22,6 +22,9 @@ export class TankMeshController {
         this.group.name = `tank_${tank.id}`;
 
         const color = new THREE.Color(tank.color);
+        this.originalArmorColor = color.clone();
+        this.originalAccentColor = new THREE.Color(0x3f3f46);
+
         const darkMetal = new THREE.MeshStandardMaterial({
             color: 0x27272a,
             roughness: 0.8,
@@ -140,42 +143,6 @@ export class TankMeshController {
 
         this.group.add(this.turretGroup);
 
-        this.healthBarGroup = new THREE.Group();
-        this.healthBarGroup.position.set(0, 24, 0);
-
-        const barBgGeo = new THREE.PlaneGeometry(28, 3.5);
-        const barBgMat = new THREE.MeshBasicMaterial({
-            color: 0x18181b,
-            side: THREE.DoubleSide,
-            transparent: true,
-            opacity: 0.8,
-        });
-        const barBg = new THREE.Mesh(barBgGeo, barBgMat);
-        this.healthBarGroup.add(barBg);
-
-        const barBorderGeo = new THREE.PlaneGeometry(29, 4.5);
-        const barBorderMat = new THREE.MeshBasicMaterial({
-            color: 0x3f3f46,
-            side: THREE.DoubleSide,
-            transparent: true,
-            opacity: 0.7,
-        });
-        const barBorder = new THREE.Mesh(barBorderGeo, barBorderMat);
-        barBorder.position.z = -0.05;
-        this.healthBarGroup.add(barBorder);
-
-        const barFillGeo = new THREE.PlaneGeometry(26, 2.5);
-        barFillGeo.translate(13, 0, 0);
-        const barFillMat = new THREE.MeshBasicMaterial({
-            color: 0x16a34a,
-            side: THREE.DoubleSide,
-        });
-        this.healthBarFill = new THREE.Mesh(barFillGeo, barFillMat);
-        this.healthBarFill.position.set(-13, 0, 0.05);
-        this.healthBarGroup.add(this.healthBarFill);
-
-        this.group.add(this.healthBarGroup);
-
         const beaconGroup = new THREE.Group();
         beaconGroup.position.set(0, 30, 0);
         beaconGroup.visible = false;
@@ -205,14 +172,42 @@ export class TankMeshController {
         this.targetRecoil = -3.8;
     }
 
+    public reset(tank: SimulatedTank, arenaWidth: number, arenaHeight: number): void {
+        this.isDead = false;
+        this.targetRecoil = 0;
+        this.recoilOffset = 0;
+        this.barrelMesh.position.x = 13;
+        this.victoryBeacon.visible = false;
+
+        if (this.armorMaterials[0]) {
+            this.armorMaterials[0].color.copy(this.originalArmorColor);
+            this.armorMaterials[0].roughness = 0.45;
+            this.armorMaterials[0].metalness = 0.2;
+        }
+        if (this.armorMaterials[1]) {
+            this.armorMaterials[1].color.copy(this.originalAccentColor);
+            this.armorMaterials[1].roughness = 0.6;
+            this.armorMaterials[1].metalness = 0.35;
+        }
+
+        const worldPos = simToWorld(tank.x, tank.y, arenaWidth, arenaHeight);
+        this.group.position.set(worldPos.x, 0, worldPos.z);
+        this.group.rotation.set(0, simAngleToWorldRotation(tank.angle), 0);
+        this.turretGroup.rotation.set(0, 0, 0);
+    }
+
     public update(
         tank: SimulatedTank,
-        camera: THREE.Camera,
+        _camera: THREE.Camera,
         arenaWidth: number,
         arenaHeight: number,
         delta: number,
         isWinner: boolean = false,
     ): void {
+        if (tank.isAlive && this.isDead) {
+            this.reset(tank, arenaWidth, arenaHeight);
+        }
+
         const worldPos = simToWorld(tank.x, tank.y, arenaWidth, arenaHeight);
 
         this.group.position.lerp(new THREE.Vector3(worldPos.x, 0, worldPos.z), 0.35);
@@ -233,20 +228,6 @@ export class TankMeshController {
         this.targetRecoil *= 0.65;
         this.barrelMesh.position.x = 13 + this.recoilOffset;
 
-        this.healthBarGroup.quaternion.copy(camera.quaternion);
-
-        const hpRatio = Math.max(0, Math.min(1, tank.energy / tank.maxEnergy));
-        this.healthBarFill.scale.x = hpRatio;
-
-        const fillMat = this.healthBarFill.material as THREE.MeshBasicMaterial;
-        if (hpRatio > 0.5) {
-            fillMat.color.setHex(0x16a34a);
-        } else if (hpRatio > 0.25) {
-            fillMat.color.setHex(0xd97706);
-        } else {
-            fillMat.color.setHex(0xdc2626);
-        }
-
         if (isWinner && tank.isAlive) {
             this.victoryBeacon.visible = true;
             this.victoryBeacon.rotation.y += delta * 2.2;
@@ -257,7 +238,6 @@ export class TankMeshController {
 
         if (!tank.isAlive && !this.isDead) {
             this.isDead = true;
-            this.healthBarGroup.visible = false;
             this.victoryBeacon.visible = false;
 
             for (const mat of this.armorMaterials) {

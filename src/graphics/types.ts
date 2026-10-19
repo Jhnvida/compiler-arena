@@ -8,7 +8,7 @@ export interface GraphicsConfig {
     bloomEffect: boolean;
 }
 
-export function simToWorld(simX: number, simY: number, arenaWidth = 800, arenaHeight = 600): { x: number; z: number } {
+export function simToWorld(simX: number, simY: number, arenaWidth = 900, arenaHeight = 900): { x: number; z: number } {
     return {
         x: simX - arenaWidth / 2,
         z: simY - arenaHeight / 2,

@@ -1,39 +1,34 @@
-export const PRESET_HUNTER = `// Robô Hunter: Perseguição tática e combate calibrado
+export const PRESET_HUNTER = `// Robô Hunter: Perseguição tática e combate em terreno aberto
 robot Hunter {
     int dist;
     int step;
     step = step + 1;
     
     scan();
-    if (position.x < 60 || position.x > 740 || position.y < 60 || position.y > 540) {
-        rotate(85);
-        move(20);
+    if (position.x < 90 || position.x > 810 || position.y < 90 || position.y > 810) {
+        rotate(75);
+        move(25);
     } else {
-        if ((position.x > 210 && position.x < 310 && position.y > 250 && position.y < 350) || (position.x > 490 && position.x < 590 && position.y > 250 && position.y < 350)) {
-            rotate(60);
-            move(20);
-        } else {
-            if (enemy.visible) {
-                dist = enemy.distance;
-                rotate(enemy.direction);
-                if (dist < 100) {
-                    fire(3);
-                    back(15);
-                } else {
-                    if (dist < 220) {
-                        fire(2);
-                        move(15);
-                    } else {
-                        fire(1);
-                        move(25);
-                    }
-                }
+        if (enemy.visible) {
+            dist = enemy.distance;
+            rotate(enemy.direction);
+            if (dist < 130) {
+                fire(3);
+                back(20);
             } else {
-                if (step % 4 == 0) {
-                    rotate(50);
+                if (dist < 280) {
+                    fire(2);
+                    move(18);
+                } else {
+                    fire(1);
+                    move(28);
                 }
-                move(25);
             }
+        } else {
+            if (step % 4 == 0) {
+                rotate(45);
+            }
+            move(25);
         }
     }
 }
@@ -46,112 +41,101 @@ robot SniperScout {
     step = step + 1;
     
     scan();
-    if (position.x < 120 || position.x > 680 || position.y < 110 || position.y > 490) {
+    if (position.x < 110 || position.x > 790 || position.y < 110 || position.y > 790) {
         rotate(90);
         move(25);
     } else {
-        if ((position.x > 210 && position.x < 310 && position.y > 250 && position.y < 350) || (position.x > 490 && position.x < 590 && position.y > 250 && position.y < 350)) {
-            rotate(75);
-            move(20);
-        } else {
-            if (enemy.visible) {
-                rotate(enemy.direction);
-                dist = enemy.distance;
-                if (dist < 160) {
-                    fire(2);
-                    back(20);
+        if (enemy.visible) {
+            rotate(enemy.direction);
+            dist = enemy.distance;
+            if (dist < 180) {
+                fire(3);
+                back(25);
+                rotate(30);
+            } else {
+                if (dist > 360) {
+                    fire(1);
+                    move(15);
                 } else {
-                    if (dist > 350) {
-                        fire(1);
+                    fire(2);
+                    if (step % 2 == 0) {
+                        rotate(20);
                         move(15);
                     } else {
-                        fire(2);
-                        if (step % 3 == 0) {
-                            rotate(25);
-                        }
-                        move(10);
+                        back(10);
                     }
                 }
-            } else {
-                if (step % 5 == 0) {
-                    rotate(60);
-                }
-                move(20);
             }
+        } else {
+            if (step % 5 == 0) {
+                rotate(60);
+            }
+            move(22);
         }
     }
 }
 `;
 
-export const PRESET_STRIKER = `// Robô Aggressive Striker: Flanqueamento ofensivo e disparos potentes
+export const PRESET_STRIKER = `// Robô Aggressive Striker: Assalto frontal e disparos contínuos
 robot AggressiveStriker {
     int dist;
     int step;
     step = step + 1;
     
     scan();
-    if (position.x < 60 || position.x > 740 || position.y < 60 || position.y > 540) {
+    if (position.x < 90 || position.x > 810 || position.y < 90 || position.y > 810) {
         rotate(95);
         move(25);
     } else {
-        if ((position.x > 210 && position.x < 310 && position.y > 250 && position.y < 350) || (position.x > 490 && position.x < 590 && position.y > 250 && position.y < 350)) {
-            rotate(70);
-            move(25);
-        } else {
-            if (enemy.visible) {
-                dist = enemy.distance;
-                rotate(enemy.direction);
-                if (dist > 220) {
-                    move(30);
-                    fire(2);
-                } else {
-                    fire(3);
-                    if (dist < 80) {
-                        back(15);
-                    } else {
-                        move(20);
-                    }
-                }
-            } else {
-                if (step % 3 == 0) {
-                    rotate(55);
-                }
+        if (enemy.visible) {
+            dist = enemy.distance;
+            rotate(enemy.direction);
+            if (dist > 250) {
                 move(30);
+                fire(2);
+            } else {
+                fire(3);
+                if (dist < 100) {
+                    back(15);
+                    rotate(35);
+                } else {
+                    move(20);
+                }
             }
+        } else {
+            if (step % 3 == 0) {
+                rotate(50);
+            }
+            move(30);
         }
     }
 }
 `;
 
-export const PRESET_PATROL = `// Robô Wandering Patrol: Patrulha tática e navegação pela arena
+export const PRESET_PATROL = `// Robô Wandering Patrol: Patrulha e navegação pela arena aberta
 robot WanderingPatrol {
     int step;
     step = step + 1;
     
     scan();
-    if (position.x < 60 || position.x > 740 || position.y < 60 || position.y > 540) {
+    if (position.x < 90 || position.x > 810 || position.y < 90 || position.y > 810) {
         rotate(90);
         move(25);
     } else {
-        if ((position.x > 210 && position.x < 310 && position.y > 250 && position.y < 350) || (position.x > 490 && position.x < 590 && position.y > 250 && position.y < 350)) {
-            rotate(60);
-            move(20);
-        } else {
-            if (enemy.visible) {
-                rotate(enemy.direction);
-                if (enemy.distance < 130) {
-                    fire(3);
-                    back(15);
-                } else {
-                    fire(2);
-                    move(15);
-                }
+        if (enemy.visible) {
+            rotate(enemy.direction);
+            if (enemy.distance < 140) {
+                fire(3);
+                back(15);
             } else {
-                if (step % 5 == 0) {
-                    rotate(60);
-                }
-                move(22);
+                fire(2);
+                move(18);
             }
+        } else {
+            if (step % 5 == 0) {
+                rotate(55);
+            }
+            move(24);
         }
     }
 }

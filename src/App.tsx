@@ -5,7 +5,7 @@ import { PRESET_HUNTER, PRESET_STRIKER } from "./compiler/presets.ts";
 import { ArenaCanvas } from "./components/ArenaCanvas.tsx";
 import { BattleHUD } from "./components/BattleHUD.tsx";
 import { CompilerModal } from "./components/CompilerModal.tsx";
-import { TankEditorCard } from "./components/TankEditorCard.tsx";
+import { RobotConfigPanel } from "./components/RobotConfigPanel.tsx";
 import { WinnerModal } from "./components/WinnerModal.tsx";
 import type { CameraMode } from "./graphics/types.ts";
 import {
@@ -13,6 +13,8 @@ import {
     SimulationEngine,
     type SimulationSnapshot,
     type TankDefinition,
+    getSystemTankColor,
+    getSystemTankName,
 } from "./simulation/index.ts";
 
 interface TankConfig {
@@ -24,15 +26,15 @@ interface TankConfig {
 
 const INITIAL_TANKS: TankConfig[] = [
     {
-        id: "tank-alpha",
-        name: "Hunter Alpha",
-        color: "#0284c7",
+        id: "tank-1",
+        name: getSystemTankName(0),
+        color: getSystemTankColor(0),
         code: PRESET_HUNTER,
     },
     {
-        id: "tank-bravo",
-        name: "Striker Bravo",
-        color: "#f97316",
+        id: "tank-2",
+        name: getSystemTankName(1),
+        color: getSystemTankColor(1),
         code: PRESET_STRIKER,
     },
 ];
@@ -42,13 +44,14 @@ function createPreviewSnapshot(
     compResults: Record<string, CompilationResult>,
 ): SimulationSnapshot | null {
     const defs: TankDefinition[] = [];
-    for (const t of tankList) {
+    for (let i = 0; i < tankList.length; i++) {
+        const t = tankList[i];
         const res = compResults[t.id] ?? compileTankScript(t.code);
         if (res.success && res.bytecode) {
             defs.push({
                 id: t.id,
-                name: t.name.trim() || `Tanque ${t.id}`,
-                color: t.color,
+                name: getSystemTankName(i),
+                color: getSystemTankColor(i),
                 program: res.bytecode,
             });
         }
@@ -72,6 +75,7 @@ export function App() {
         return initial;
     });
     const [inspectorTankIndex, setInspectorTankIndex] = useState<number | null>(null);
+    const [selectedTankIndex, setSelectedTankIndex] = useState<number>(0);
 
     const [snapshot, setSnapshot] = useState<SimulationSnapshot | null>(() => {
         const initial: Record<string, CompilationResult> = {};
@@ -87,6 +91,7 @@ export function App() {
     const [menuPanelCollapsed, setMenuPanelCollapsed] = useState<boolean>(false);
     const [menuErrorNotice, setMenuErrorNotice] = useState<string | null>(null);
 
+    const [battleSessionId, setBattleSessionId] = useState<number>(0);
     const engineRef = useRef<SimulationEngine | null>(null);
     const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const victoryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -97,24 +102,43 @@ export function App() {
         return res;
     }, []);
 
-    const handleStartBattle = () => {
+    const launchBattle = useCallback((definitions: TankDefinition[]) => {
+        if (tickIntervalRef.current) {
+            clearInterval(tickIntervalRef.current);
+            tickIntervalRef.current = null;
+        }
         if (victoryTimerRef.current) {
             clearTimeout(victoryTimerRef.current);
             victoryTimerRef.current = null;
         }
 
+        const engine = new SimulationEngine();
+        engine.initBattle(definitions);
+        engine.start();
+        engineRef.current = engine;
+
+        setSnapshot(engine.getSnapshot());
+        setIsPaused(false);
+        setShowWinnerModal(false);
+        setViewMode("battle");
+        setCameraMode("combat");
+        setBattleSessionId((s) => s + 1);
+    }, []);
+
+    const handleStartBattle = () => {
         const definitions: TankDefinition[] = [];
         let hasErrors = false;
 
-        for (const t of tanks) {
+        for (let i = 0; i < tanks.length; i++) {
+            const t = tanks[i];
             const res = compileTank(t.id, t.code);
             if (!res.success || !res.bytecode) {
                 hasErrors = true;
             } else {
                 definitions.push({
                     id: t.id,
-                    name: t.name.trim() || `Tanque ${t.id}`,
-                    color: t.color,
+                    name: getSystemTankName(i),
+                    color: getSystemTankColor(i),
                     program: res.bytecode,
                 });
             }
@@ -133,22 +157,13 @@ export function App() {
         }
 
         setMenuErrorNotice(null);
-        const engine = new SimulationEngine();
-        engine.initBattle(definitions);
-        engine.start();
-        engineRef.current = engine;
-
-        setSnapshot(engine.getSnapshot());
-        setIsPaused(false);
-        setShowWinnerModal(false);
-        setViewMode("battle");
-        setCameraMode("combat");
+        launchBattle(definitions);
     };
 
     const handleStep = useCallback(() => {
         if (engineRef.current) {
             const nextSnap = engineRef.current.step();
-            setSnapshot({ ...nextSnap });
+            setSnapshot(nextSnap);
 
             if (nextSnap.status === "finished") {
                 setCameraMode("victory");
@@ -172,31 +187,24 @@ export function App() {
     }, []);
 
     const handleRestart = useCallback(() => {
-        if (!engineRef.current) return;
-        if (victoryTimerRef.current) {
-            clearTimeout(victoryTimerRef.current);
-            victoryTimerRef.current = null;
-        }
-
-        const defs: TankDefinition[] = tanks.map((t) => {
+        const defs: TankDefinition[] = tanks.map((t, idx) => {
             const res = compilationResults[t.id] ?? compileTankScript(t.code);
             return {
                 id: t.id,
-                name: t.name,
-                color: t.color,
+                name: getSystemTankName(idx),
+                color: getSystemTankColor(idx),
                 program: res.bytecode!,
             };
         });
 
-        engineRef.current.initBattle(defs);
-        engineRef.current.start();
-        setSnapshot(engineRef.current.getSnapshot());
-        setIsPaused(false);
-        setShowWinnerModal(false);
-        setCameraMode("combat");
-    }, [tanks, compilationResults]);
+        launchBattle(defs);
+    }, [tanks, compilationResults, launchBattle]);
 
     const handleReturnToMenu = useCallback(() => {
+        if (tickIntervalRef.current) {
+            clearInterval(tickIntervalRef.current);
+            tickIntervalRef.current = null;
+        }
         if (victoryTimerRef.current) {
             clearTimeout(victoryTimerRef.current);
             victoryTimerRef.current = null;
@@ -225,7 +233,7 @@ export function App() {
         tickIntervalRef.current = setInterval(() => {
             if (engineRef.current) {
                 const nextSnap = engineRef.current.step();
-                setSnapshot({ ...nextSnap });
+                setSnapshot(nextSnap);
 
                 if (nextSnap.status === "finished") {
                     if (tickIntervalRef.current) {
@@ -247,15 +255,16 @@ export function App() {
                 tickIntervalRef.current = null;
             }
         };
-    }, [viewMode, isPaused, speed]);
+    }, [viewMode, isPaused, speed, battleSessionId]);
 
     const handleAddTank = () => {
-        if (tanks.length >= 4) return;
+        if (tanks.length >= 10) return;
+        const newIndex = tanks.length;
         const id = `tank-${Date.now()}`;
         const nextTank: TankConfig = {
             id,
-            name: `Robô ${tanks.length + 1}`,
-            color: tanks.length === 2 ? "#10b981" : "#ec4899",
+            name: getSystemTankName(newIndex),
+            color: getSystemTankColor(newIndex),
             code: PRESET_HUNTER,
         };
         const res = compileTankScript(nextTank.code);
@@ -263,13 +272,29 @@ export function App() {
         const nextTanks = [...tanks, nextTank];
         setTanks(nextTanks);
         setCompilationResults(nextComp);
+        setSelectedTankIndex(newIndex);
         setSnapshot(createPreviewSnapshot(nextTanks, nextComp));
     };
 
     const handleRemoveTank = (id: string) => {
         if (tanks.length <= 2) return;
-        const nextTanks = tanks.filter((t) => t.id !== id);
+        const removedIndex = tanks.findIndex((t) => t.id === id);
+        const filtered = tanks.filter((t) => t.id !== id);
+        const nextTanks = filtered.map((t, idx) => ({
+            ...t,
+            name: getSystemTankName(idx),
+            color: getSystemTankColor(idx),
+        }));
         setTanks(nextTanks);
+        setSelectedTankIndex((prev) => {
+            if (removedIndex === prev) {
+                return Math.max(0, Math.min(prev, nextTanks.length - 1));
+            }
+            if (removedIndex < prev) {
+                return Math.max(0, prev - 1);
+            }
+            return Math.min(prev, nextTanks.length - 1);
+        });
         setSnapshot(createPreviewSnapshot(nextTanks, compilationResults));
     };
 
@@ -303,10 +328,10 @@ export function App() {
 
                         <div className="flex items-center gap-2.5">
                             <span className="hidden sm:inline-block px-2.5 py-1 text-[11px] font-mono text-neutral-400 bg-neutral-950 rounded border border-neutral-800">
-                                {tanks.length} / 4 Robôs
+                                {tanks.length} / 10 Robôs
                             </span>
 
-                            {tanks.length < 4 && (
+                            {tanks.length < 10 && (
                                 <button
                                     type="button"
                                     onClick={handleAddTank}
@@ -359,52 +384,26 @@ export function App() {
                             </div>
 
                             {!menuPanelCollapsed && (
-                                <div className="p-3 overflow-x-auto">
-                                    <div
-                                        className={`grid gap-3 ${
-                                            tanks.length === 2
-                                                ? "grid-cols-1 sm:grid-cols-2"
-                                                : tanks.length === 3
-                                                  ? "grid-cols-1 sm:grid-cols-3"
-                                                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
-                                        }`}
-                                    >
-                                        {tanks.map((tank, idx) => (
-                                            <TankEditorCard
-                                                key={tank.id}
-                                                tankIndex={idx}
-                                                name={tank.name}
-                                                setName={(newName) => {
-                                                    setTanks((prev) =>
-                                                        prev.map((t) =>
-                                                            t.id === tank.id ? { ...t, name: newName } : t,
-                                                        ),
-                                                    );
-                                                }}
-                                                color={tank.color}
-                                                setColor={(newColor) => {
-                                                    setTanks((prev) =>
-                                                        prev.map((t) =>
-                                                            t.id === tank.id ? { ...t, color: newColor } : t,
-                                                        ),
-                                                    );
-                                                }}
-                                                code={tank.code}
-                                                setCode={(newCode) => {
-                                                    setTanks((prev) =>
-                                                        prev.map((t) =>
-                                                            t.id === tank.id ? { ...t, code: newCode } : t,
-                                                        ),
-                                                    );
-                                                    compileTank(tank.id, newCode);
-                                                }}
-                                                compilationResult={compilationResults[tank.id] ?? null}
-                                                onInspect={() => setInspectorTankIndex(idx)}
-                                                onRemove={() => handleRemoveTank(tank.id)}
-                                                canRemove={tanks.length > 2}
-                                            />
-                                        ))}
-                                    </div>
+                                <div className="p-3">
+                                    <RobotConfigPanel
+                                        tanks={tanks}
+                                        selectedIndex={selectedTankIndex}
+                                        onSelectTank={setSelectedTankIndex}
+                                        onAddTank={handleAddTank}
+                                        onRemoveTank={handleRemoveTank}
+                                        onCodeChange={(tankId, newCode) => {
+                                            setTanks((prev) =>
+                                                prev.map((t) =>
+                                                    t.id === tankId ? { ...t, code: newCode } : t,
+                                                ),
+                                            );
+                                            compileTank(tankId, newCode);
+                                        }}
+                                        compilationResults={compilationResults}
+                                        onInspectTank={(idx) => setInspectorTankIndex(idx)}
+                                        canAdd={tanks.length < 10}
+                                        canRemove={tanks.length > 2}
+                                    />
                                 </div>
                             )}
                         </div>

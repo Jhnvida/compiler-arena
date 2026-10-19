@@ -104,16 +104,11 @@ export function lineIntersectsAABB(p1: Point2D, p2: Point2D, box: Obstacle): boo
     return t0 <= t1;
 }
 
-export const DEFAULT_OBSTACLES: Obstacle[] = [
-    { id: "obs-center-left", x: 260, y: 300, width: 70, height: 70, shape: "box" },
-    { id: "obs-center-right", x: 540, y: 300, width: 70, height: 70, shape: "box" },
-    { id: "obs-top", x: 400, y: 150, width: 100, height: 50, shape: "box" },
-    { id: "obs-bottom", x: 400, y: 450, width: 100, height: 50, shape: "box" },
-];
+export const DEFAULT_OBSTACLES: Obstacle[] = [];
 
 export const DEFAULT_ARENA_CONFIG: ArenaConfig = {
-    width: 800,
-    height: 600,
+    width: 900,
+    height: 900,
     obstacles: DEFAULT_OBSTACLES,
     maxTicks: 3000,
     defaultTankEnergy: 100,

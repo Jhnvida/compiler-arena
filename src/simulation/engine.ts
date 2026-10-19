@@ -73,37 +73,55 @@ export class SimulationEngine {
         this.isDraw = false;
         this.tanks = [];
 
-        for (const def of tankDefs) {
-            let x: number;
-            let y: number;
-            let angle: number;
+        const tanksToSpawn: { def: TankDefinition; originalIndex: number }[] = [];
 
+        for (let i = 0; i < tankDefs.length; i++) {
+            const def = tankDefs[i];
             if (def.initialPosition) {
-                x = def.initialPosition.x;
-                y = def.initialPosition.y;
-                angle = def.initialPosition.angle ?? 0;
+                const x = def.initialPosition.x;
+                const y = def.initialPosition.y;
+                const angle = def.initialPosition.angle ?? 0;
+                const tank = createSimulatedTank(def.id, def.name, def.color, def.program, x, y, angle, this.config);
+                this.tanks.push(tank);
+                this.emitEvent("tank_spawn", `${tank.name} entrou na arena na posição (${x}, ${y})`, {
+                    tankId: tank.id,
+                    x,
+                    y,
+                });
             } else {
-                const spawn = findSafeSpawn(
-                    this.tanks,
-                    this.config.obstacles,
-                    this.config.width,
-                    this.config.height,
-                    this.config.tankRadius,
-                );
-                x = spawn.x;
-                y = spawn.y;
-                angle = spawn.angle;
+                tanksToSpawn.push({ def, originalIndex: i });
             }
+        }
 
-            const tank = createSimulatedTank(def.id, def.name, def.color, def.program, x, y, angle, this.config);
-
+        const shuffled = [...tanksToSpawn].sort(() => Math.random() - 0.5);
+        for (const item of shuffled) {
+            const spawn = findSafeSpawn(
+                this.tanks,
+                this.config.obstacles,
+                this.config.width,
+                this.config.height,
+                this.config.tankRadius,
+            );
+            const tank = createSimulatedTank(
+                item.def.id,
+                item.def.name,
+                item.def.color,
+                item.def.program,
+                spawn.x,
+                spawn.y,
+                spawn.angle,
+                this.config,
+            );
             this.tanks.push(tank);
-            this.emitEvent("tank_spawn", `${tank.name} entrou na arena na posição (${x}, ${y})`, {
+            this.emitEvent("tank_spawn", `${tank.name} entrou na arena na posição (${spawn.x}, ${spawn.y})`, {
                 tankId: tank.id,
-                x,
-                y,
+                x: spawn.x,
+                y: spawn.y,
             });
         }
+
+        const idToIndex = new Map(tankDefs.map((d, idx) => [d.id, idx]));
+        this.tanks.sort((a, b) => (idToIndex.get(a.id) ?? 0) - (idToIndex.get(b.id) ?? 0));
 
         for (const tank of this.tanks) {
             updateTankSensors(tank, this.tanks, this.config.obstacles);
@@ -371,10 +389,29 @@ export class SimulationEngine {
         return {
             tick: this.tick,
             status: this.status,
-            tanks: this.tanks,
-            projectiles: this.projectiles,
+            tanks: this.tanks.map((t) => ({
+                ...t,
+                sensors: {
+                    ...t.sensors,
+                    position: { ...t.sensors.position },
+                    enemy: { ...t.sensors.enemy },
+                },
+                stats: { ...t.stats },
+                lastAction: t.lastAction ? { ...t.lastAction } : null,
+            })),
+            projectiles: this.projectiles.map((p) => ({ ...p })),
             recentEvents: [...this.events],
-            winner: this.winner,
+            winner: this.winner
+                ? {
+                      ...this.winner,
+                      sensors: {
+                          ...this.winner.sensors,
+                          position: { ...this.winner.sensors.position },
+                          enemy: { ...this.winner.sensors.enemy },
+                      },
+                      stats: { ...this.winner.stats },
+                  }
+                : null,
             isDraw: this.isDraw,
             config: this.config,
         };

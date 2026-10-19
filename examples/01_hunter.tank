@@ -1,0 +1,43 @@
+// ============================================================================
+// COMPILER ARENA - ESTRATÉGIA: HUNTER
+// Robô Caçador: Varredura de radar contínua, perseguição e disparos escalonados
+// ============================================================================
+robot Hunter {
+    int dist;
+    int step;
+    step = step + 1;
+    
+    // Varredura de radar para atualizar sensores (enemy.visible, distance, direction)
+    scan();
+
+    // Detecção e prevenção de colisão com as bordas da arena (900x900)
+    if (position.x < 90 || position.x > 810 || position.y < 90 || position.y > 810) {
+        rotate(75);
+        move(25);
+    } else {
+        if (enemy.visible) {
+            dist = enemy.distance;
+            rotate(enemy.direction);
+            
+            // Controle tático de potência de disparo conforme distância
+            if (dist < 130) {
+                fire(3); // Potência máxima a curta distância
+                back(20);
+            } else {
+                if (dist < 280) {
+                    fire(2); // Potência média a meia distância
+                    move(18);
+                } else {
+                    fire(1); // Potência conservadora de longo alcance
+                    move(28);
+                }
+            }
+        } else {
+            // Patrulha exploratória se nenhum inimigo estiver visível
+            if (step % 4 == 0) {
+                rotate(45);
+            }
+            move(25);
+        }
+    }
+}

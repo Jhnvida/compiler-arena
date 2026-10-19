@@ -1,0 +1,25 @@
+// ============================================================================
+// COMPILER ARENA - DEMONSTRAÇÃO DE OTIMIZAÇÕES DE CÓDIGO
+// Este exemplo foi desenhado especificamente para comprovar na apresentação:
+// 1. Dobra de Constantes (Constant Folding): 10 + 20 * 2 -> 50
+// 2. Simplificação Algébrica (Algebraic Simplification): x * 1 -> x, x + 0 -> x, x * 0 -> 0
+// 3. Eliminação de Código Morto (Dead Code Elimination): blocos inalcançáveis
+// ============================================================================
+robot OptDemo {
+    // 1. Constant Folding: calculado em tempo de compilação
+    int constantFold = 10 + 20 * 2; // Resultado dobrado para 50
+
+    // 2. Simplificação Algébrica: identidades matemáticas simplificadas
+    int algebraicX = constantFold * 1 + 0; // Simplificado para constantFold
+    int zeroMul = algebraicX * 0;          // Simplificado para 0
+
+    // 3. Eliminação de Código Morto: condição estática falsa
+    if (false) {
+        // Todo este bloco é eliminado da Árvore e do Bytecode gerado
+        move(999);
+        fire(3);
+    } else {
+        move(algebraicX);
+        fire(2);
+    }
+}

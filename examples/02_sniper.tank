@@ -1,0 +1,51 @@
+// ============================================================================
+// COMPILER ARENA - ESTRATÉGIA: SNIPER SCOUT
+// Robô Atirador: Combate de longo alcance, recuo defensivo e disparos de precisão
+// ============================================================================
+robot SniperScout {
+    int dist;
+    int step;
+    step = step + 1;
+    
+    // Varredura de radar
+    scan();
+
+    // Verificação de segurança das barreiras
+    if (position.x < 110 || position.x > 790 || position.y < 110 || position.y > 790) {
+        rotate(90);
+        move(25);
+    } else {
+        if (enemy.visible) {
+            rotate(enemy.direction);
+            dist = enemy.distance;
+            
+            // Se o inimigo se aproximar perigosamente, dispara com força e recua
+            if (dist < 180) {
+                fire(3);
+                back(25);
+                rotate(30);
+            } else {
+                if (dist > 360) {
+                    // Alinhamento de longo alcance com aproximação cautelosa
+                    fire(1);
+                    move(15);
+                } else {
+                    // Posição de engajamento ideal para atirador de elite
+                    fire(2);
+                    if (step % 2 == 0) {
+                        rotate(20);
+                        move(15);
+                    } else {
+                        back(10);
+                    }
+                }
+            }
+        } else {
+            // Rotação periódica para localização de alvos
+            if (step % 5 == 0) {
+                rotate(60);
+            }
+            move(22);
+        }
+    }
+}

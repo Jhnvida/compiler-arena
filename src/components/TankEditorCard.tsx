@@ -13,9 +13,7 @@ import {
 interface TankEditorCardProps {
     tankIndex: number;
     name: string;
-    setName: (name: string) => void;
     color: string;
-    setColor: (color: string) => void;
     code: string;
     setCode: (code: string) => void;
     compilationResult: CompilationResult | null;
@@ -33,14 +31,10 @@ const PRESET_OPTIONS = [
     { label: "Demo de Erros Sintáticos", value: "errors", code: PRESET_ERRORS_DEMO },
 ];
 
-const COLOR_PALETTE = ["#0284c7", "#f97316", "#10b981", "#ec4899", "#8b5cf6", "#eab308"];
-
 export const TankEditorCard: React.FC<TankEditorCardProps> = ({
     tankIndex,
     name,
-    setName,
     color,
-    setColor,
     code,
     setCode,
     compilationResult,
@@ -49,7 +43,6 @@ export const TankEditorCard: React.FC<TankEditorCardProps> = ({
     canRemove,
 }) => {
     const [selectedPreset, setSelectedPreset] = useState<string>("custom");
-    const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
 
     const handlePresetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const val = e.target.value;
@@ -67,45 +60,17 @@ export const TankEditorCard: React.FC<TankEditorCardProps> = ({
         <div className="flex flex-col bg-neutral-900/95 border border-neutral-800 rounded-lg overflow-hidden shadow-sm transition-all duration-200 hover:border-neutral-700 min-w-[280px]">
             <div className="flex items-center justify-between px-3.5 py-2.5 bg-neutral-950/80 border-b border-neutral-800">
                 <div className="flex items-center gap-2.5">
-                    <div className="relative">
-                        <button
-                            type="button"
-                            onClick={() => setShowColorPicker(!showColorPicker)}
-                            className="w-4 h-4 rounded-full border border-neutral-600 hover:scale-110 transition-transform cursor-pointer"
-                            style={{ backgroundColor: color }}
-                            title="Alterar cor da equipe"
-                        />
-                        {showColorPicker && (
-                            <div className="absolute left-0 top-6 flex items-center gap-1.5 p-1.5 bg-neutral-900 border border-neutral-700 rounded-md shadow-lg z-30">
-                                {COLOR_PALETTE.map((c) => (
-                                    <button
-                                        key={c}
-                                        type="button"
-                                        onClick={() => {
-                                            setColor(c);
-                                            setShowColorPicker(false);
-                                        }}
-                                        className={`w-3.5 h-3.5 rounded-full border cursor-pointer transition-transform ${
-                                            color === c
-                                                ? "border-white scale-110"
-                                                : "border-transparent hover:scale-105"
-                                        }`}
-                                        style={{ backgroundColor: c }}
-                                    />
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    <div
+                        className="w-3.5 h-3.5 rounded-full border border-neutral-600/80 shadow-xs shrink-0"
+                        style={{ backgroundColor: color }}
+                        title={`Cor do ${name}`}
+                    />
 
                     <div className="flex flex-col">
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder={`Robô #${tankIndex + 1}`}
-                            className="text-xs font-semibold bg-transparent text-neutral-100 hover:text-white focus:outline-none focus:border-b focus:border-neutral-400 transition-colors w-28 sm:w-32"
-                        />
-                        <span className="text-[10px] text-neutral-500 font-mono">Posição #{tankIndex + 1}</span>
+                        <span className="text-xs font-semibold text-neutral-100">
+                            {name}
+                        </span>
+                        <span className="text-[10px] text-neutral-500 font-mono">Tanque #{tankIndex + 1}</span>
                     </div>
                 </div>
 

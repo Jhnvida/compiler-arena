@@ -1,0 +1,15 @@
+// ============================================================================
+// COMPILER ARENA - DEMONSTRAÇÃO DE ANÁLISE SEMÂNTICA E DIAGNÓSTICOS
+// Este exemplo demonstra como o compilador detecta e reporta múltiplos erros
+// léxicos, sintáticos e semânticos com indicação precisa de linha e coluna:
+// ============================================================================
+robot BuggyTank {
+    int energy = 100;     // ERRO: "energy" é um identificador reservado de sensor
+    int speed = 5;
+    int speed = 10;       // ERRO: Redeclaração da variável "speed" no mesmo escopo
+    
+    move(false);          // ERRO: Incompatibilidade de tipo (esperado numérico, fornecido booleano)
+    fire(10);             // ERRO: Potência de tiro inválida (permitido apenas de 1 a 3)
+    enemy.visible = true; // ERRO: Sensores são exclusivamente de leitura (read-only)
+    enemy = 123;          // ERRO: Atribuição inválida para objeto sensor
+}

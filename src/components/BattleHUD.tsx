@@ -172,35 +172,53 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
             </header>
 
             <footer className="pointer-events-auto flex items-end justify-between gap-4">
-                <div className="flex flex-col gap-2 max-w-sm w-full">
+                <div
+                    className={`grid gap-2 w-full max-h-[300px] overflow-y-auto pr-1 ${
+                        snapshot.tanks.length <= 4
+                            ? "grid-cols-1 max-w-sm"
+                            : "grid-cols-2 max-w-xl lg:max-w-2xl"
+                    }`}
+                >
                     {snapshot.tanks.map((tank) => {
                         const hpRatio = Math.max(0, Math.min(1, tank.energy / tank.maxEnergy));
                         const hpPercent = Math.round(hpRatio * 100);
+                        const isCompact = snapshot.tanks.length > 4;
 
                         return (
                             <div
                                 key={tank.id}
-                                className={`p-2.5 rounded-lg border backdrop-blur-md transition-all ${
+                                className={`rounded-lg border backdrop-blur-md transition-all ${
+                                    isCompact ? "p-2" : "p-2.5"
+                                } ${
                                     tank.isAlive
                                         ? "bg-neutral-900/90 border-neutral-800 shadow-sm"
                                         : "bg-neutral-950/60 border-neutral-900 opacity-50"
                                 }`}
                             >
-                                <div className="flex items-center justify-between mb-1.5">
-                                    <div className="flex items-center gap-2">
+                                <div className="flex items-center justify-between mb-1">
+                                    <div className="flex items-center gap-1.5 min-w-0">
                                         <span
-                                            className="w-2.5 h-2.5 rounded-full shrink-0"
+                                            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm border border-white/20"
                                             style={{ backgroundColor: tank.color }}
                                         />
-                                        <span className="text-xs font-semibold text-neutral-200 truncate">
+                                        <span className="text-xs font-semibold text-neutral-100 truncate">
                                             {tank.name}
+                                        </span>
+                                        <span
+                                            className={`px-1 py-0.2 text-[8px] font-semibold tracking-wider uppercase border rounded ${
+                                                tank.isAlive
+                                                    ? "bg-emerald-950/80 text-emerald-400 border-emerald-800/80"
+                                                    : "bg-neutral-900 text-neutral-400 border-neutral-800"
+                                            }`}
+                                        >
+                                            {tank.isAlive ? "Ativo" : "Morto"}
                                         </span>
                                     </div>
 
-                                    <div className="flex items-center gap-1.5 text-[11px] font-mono">
+                                    <div className="flex items-center gap-1 text-[11px] font-mono shrink-0">
                                         {tank.lastAction && tank.isAlive ? (
-                                            <span className="px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-300 border border-neutral-700 text-[10px] uppercase">
-                                                {tank.lastAction.type} {tank.lastAction.value ?? ""}
+                                            <span className="px-1 py-0.2 rounded bg-neutral-800 text-neutral-300 border border-neutral-700 text-[9px] uppercase">
+                                                {tank.lastAction.type}
                                             </span>
                                         ) : null}
                                         <span
@@ -212,34 +230,36 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                                                       : "text-rose-400"
                                             }`}
                                         >
-                                            {tank.isAlive ? `${tank.energy} HP` : "Destruído"}
+                                            {tank.isAlive ? `${tank.energy} HP` : "0 HP"}
                                         </span>
                                     </div>
                                 </div>
 
-                                <div className="w-full h-1.5 bg-neutral-800 rounded-full overflow-hidden">
+                                <div className="w-full h-1.5 bg-neutral-950 rounded-full overflow-hidden border border-neutral-800/80">
                                     <div
-                                        className={`h-full transition-all duration-200 rounded-full ${
+                                        className={`h-full transition-all duration-150 rounded-full ${
                                             hpPercent > 50
                                                 ? "bg-emerald-500"
                                                 : hpPercent > 25
                                                   ? "bg-amber-500"
                                                   : "bg-rose-500"
                                         }`}
-                                        style={{ width: `${hpPercent}%` }}
+                                        style={{ width: `${tank.isAlive ? hpPercent : 0}%` }}
                                     />
                                 </div>
 
-                                <div className="flex items-center justify-between mt-1 text-[10px] text-neutral-500 font-mono">
-                                    <div className="flex items-center gap-1">
-                                        <Crosshair className="w-3 h-3 text-neutral-600" />
-                                        <span>{tank.stats.kills} elim</span>
+                                {!isCompact && (
+                                    <div className="flex items-center justify-between mt-1 text-[10px] text-neutral-500 font-mono">
+                                        <div className="flex items-center gap-1">
+                                            <Crosshair className="w-3 h-3 text-neutral-600" />
+                                            <span>{tank.stats.kills} elim</span>
+                                        </div>
+                                        <span>
+                                            Tiros: {tank.stats.shotsFired} ({tank.stats.shotsHit})
+                                        </span>
+                                        <span>Dano: {tank.stats.damageDealt}</span>
                                     </div>
-                                    <span>
-                                        Tiros: {tank.stats.shotsFired} ({tank.stats.shotsHit} acertos)
-                                    </span>
-                                    <span>Dano: {tank.stats.damageDealt}</span>
-                                </div>
+                                )}
                             </div>
                         );
                     })}

@@ -274,7 +274,7 @@ export class ParticleSystemManager {
         this.particles = remaining;
     }
 
-    public dispose(): void {
+    public clear(): void {
         for (const p of this.particles) {
             this.group.remove(p.mesh);
             p.mesh.geometry.dispose();
@@ -297,5 +297,9 @@ export class ParticleSystemManager {
             });
         }
         this.projectileMeshes.clear();
+    }
+
+    public dispose(): void {
+        this.clear();
     }
 }

@@ -1,0 +1,43 @@
+// ============================================================================
+// COMPILER ARENA - ESTRATÉGIA: AGGRESSIVE STRIKER
+// Robô de Ataque: Avanço veloz, pressão constante e rajadas contínuas
+// ============================================================================
+robot AggressiveStriker {
+    int dist;
+    int step;
+    step = step + 1;
+    
+    // Varredura de radar
+    scan();
+
+    // Verificação de barreiras
+    if (position.x < 90 || position.x > 810 || position.y < 90 || position.y > 810) {
+        rotate(95);
+        move(25);
+    } else {
+        if (enemy.visible) {
+            dist = enemy.distance;
+            rotate(enemy.direction);
+            
+            // Perseguição acelerada para encurralar adversários
+            if (dist > 250) {
+                move(30);
+                fire(2);
+            } else {
+                fire(3);
+                if (dist < 100) {
+                    back(15);
+                    rotate(35);
+                } else {
+                    move(20);
+                }
+            }
+        } else {
+            // Varredura rápida agressiva
+            if (step % 3 == 0) {
+                rotate(50);
+            }
+            move(30);
+        }
+    }
+}

@@ -148,12 +148,19 @@ export class SceneManager {
             }
         }
 
+        if (snapshot.tick === 0) {
+            this.processedEventIds.clear();
+            this.particleManager.clear();
+        }
+
         for (const tank of snapshot.tanks) {
             let ctrl = this.tankControllers.get(tank.id);
             if (!ctrl) {
                 ctrl = new TankMeshController(tank, width, height);
                 this.scene.add(ctrl.group);
                 this.tankControllers.set(tank.id, ctrl);
+            } else if (snapshot.tick === 0) {
+                ctrl.reset(tank, width, height);
             }
         }
 

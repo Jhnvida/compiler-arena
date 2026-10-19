@@ -58,7 +58,9 @@ describe("Simulation Engine", () => {
 
     it("detects obstacle collisions and stops tank from penetrating", () => {
         const comp = compileTankScript("robot ObstacleCrasher { move(50); }");
-        const engine = new SimulationEngine();
+        const engine = new SimulationEngine({
+            obstacles: [{ id: "obs-center-left", x: 260, y: 300, width: 70, height: 70, shape: "box" }],
+        });
 
         engine.initBattle([
             {
@@ -142,7 +144,9 @@ describe("Simulation Engine", () => {
 
     it("blocks radar line-of-sight when an obstacle is directly in between", () => {
         const comp = compileTankScript("robot Scanner { scan(); }");
-        const engine = new SimulationEngine();
+        const engine = new SimulationEngine({
+            obstacles: [{ id: "obs-center-left", x: 260, y: 300, width: 70, height: 70, shape: "box" }],
+        });
 
         engine.initBattle([
             {
@@ -213,7 +217,7 @@ describe("Simulation Engine", () => {
                 name: "Shooter",
                 color: "#3b82f6",
                 program: shooterComp.bytecode!,
-                initialPosition: { x: 760, y: 300, angle: 0 },
+                initialPosition: { x: engine.config.width - 40, y: 300, angle: 0 },
             },
             {
                 id: "dummy",

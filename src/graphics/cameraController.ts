@@ -18,11 +18,11 @@ export class CameraController {
 
     constructor(aspect: number) {
         this.camera = new THREE.PerspectiveCamera(45, aspect, 1, 4000);
-        this.camera.position.set(0, 320, 560);
+        this.camera.position.set(0, 400, 720);
         this.camera.lookAt(0, 0, 0);
     }
 
-    public setMode(newMode: CameraMode, winnerTank?: SimulatedTank | null, arenaWidth = 800, arenaHeight = 600): void {
+    public setMode(newMode: CameraMode, winnerTank?: SimulatedTank | null, arenaWidth = 900, arenaHeight = 900): void {
         if (this.mode === newMode && !winnerTank) return;
         this.mode = newMode;
 
@@ -30,8 +30,8 @@ export class CameraController {
             this.isTransitioning = true;
             gsap.to(this.camera.position, {
                 x: 0,
-                y: 440,
-                z: 520,
+                y: 580,
+                z: 680,
                 duration: 1.4,
                 ease: "power2.inOut",
                 onComplete: () => {
@@ -70,6 +70,8 @@ export class CameraController {
             });
         } else if (newMode === "menu_orbit") {
             this.isTransitioning = true;
+            const orbitRadius = 800;
+            const orbitHeight = 400;
             gsap.to(this.currentTarget, {
                 x: 0,
                 y: 0,
@@ -78,9 +80,9 @@ export class CameraController {
                 ease: "power2.inOut",
             });
             gsap.to(this.camera.position, {
-                x: Math.cos(this.orbitAngle) * 580,
-                y: 300,
-                z: Math.sin(this.orbitAngle) * 580,
+                x: Math.cos(this.orbitAngle) * orbitRadius,
+                y: orbitHeight,
+                z: Math.sin(this.orbitAngle) * orbitRadius,
                 duration: 1.2,
                 ease: "power2.inOut",
                 onComplete: () => {
@@ -99,8 +101,8 @@ export class CameraController {
     ): void {
         if (this.mode === "menu_orbit") {
             this.orbitAngle += delta * 0.15;
-            const radius = 620;
-            const height = 300;
+            const radius = 800;
+            const height = 400;
 
             if (!this.isTransitioning) {
                 this.camera.position.x = Math.cos(this.orbitAngle) * radius;
@@ -133,15 +135,14 @@ export class CameraController {
                 const rawCenterX = sumX / count;
                 const rawCenterZ = sumZ / count;
 
-                const centerX = Math.max(-120, Math.min(120, rawCenterX));
-                const centerZ = Math.max(-90, Math.min(90, rawCenterZ));
+                const centerX = Math.max(-140, Math.min(140, rawCenterX));
+                const centerZ = Math.max(-140, Math.min(140, rawCenterZ));
 
                 const spanX = maxX - minX;
                 const spanZ = maxZ - minZ;
-                const maxSpan = Math.max(spanX, spanZ, 220);
-
-                const dist = Math.max(460, 360 + maxSpan * 0.52);
-                const height = Math.max(380, 300 + maxSpan * 0.42);
+                const maxSpan = Math.max(spanX, spanZ, 260);
+                const dist = Math.max(600, 480 + maxSpan * 0.45);
+                const height = Math.max(540, 440 + maxSpan * 0.45);
 
                 this.desiredTarget.set(centerX, 0, centerZ);
                 this.desiredPosition.set(centerX, height, centerZ + dist);

@@ -1,0 +1,34 @@
+// ============================================================================
+// COMPILER ARENA - ESTRATÉGIA: WANDERING PATROL
+// Robô Sentinela: Movimentação defensiva contínua e contra-ataque reativo
+// ============================================================================
+robot WanderingPatrol {
+    int step;
+    step = step + 1;
+    
+    // Varredura de radar
+    scan();
+
+    // Verificação de barreiras perimetrais
+    if (position.x < 90 || position.x > 810 || position.y < 90 || position.y > 810) {
+        rotate(90);
+        move(25);
+    } else {
+        if (enemy.visible) {
+            rotate(enemy.direction);
+            if (enemy.distance < 140) {
+                fire(3);
+                back(15);
+            } else {
+                fire(2);
+                move(18);
+            }
+        } else {
+            // Patrulhamento em padrão angular
+            if (step % 5 == 0) {
+                rotate(55);
+            }
+            move(24);
+        }
+    }
+}
