@@ -1,5 +1,6 @@
 import { AlertCircle, Bot, ChevronDown, ChevronUp, Play, Plus, Trophy } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { soundManager } from "./audio/soundManager.ts";
 import { compileTankScript, type CompilationResult } from "./compiler/compiler.ts";
 import { PRESET_HUNTER, PRESET_STRIKER } from "./compiler/presets.ts";
 import { ArenaCanvas } from "./components/ArenaCanvas.tsx";
@@ -10,11 +11,11 @@ import { WinnerModal } from "./components/WinnerModal.tsx";
 import type { CameraMode } from "./graphics/types.ts";
 import {
     DEFAULT_ARENA_CONFIG,
+    getSystemTankColor,
+    getSystemTankName,
     SimulationEngine,
     type SimulationSnapshot,
     type TankDefinition,
-    getSystemTankColor,
-    getSystemTankName,
 } from "./simulation/index.ts";
 
 interface TankConfig {
@@ -123,6 +124,7 @@ export function App() {
         setViewMode("battle");
         setCameraMode("combat");
         setBattleSessionId((s) => s + 1);
+        soundManager.playBattleStart();
     }, []);
 
     const handleStartBattle = () => {
@@ -393,9 +395,7 @@ export function App() {
                                         onRemoveTank={handleRemoveTank}
                                         onCodeChange={(tankId, newCode) => {
                                             setTanks((prev) =>
-                                                prev.map((t) =>
-                                                    t.id === tankId ? { ...t, code: newCode } : t,
-                                                ),
+                                                prev.map((t) => (t.id === tankId ? { ...t, code: newCode } : t)),
                                             );
                                             compileTank(tankId, newCode);
                                         }}

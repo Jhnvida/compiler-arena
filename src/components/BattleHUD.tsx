@@ -10,8 +10,11 @@ import {
     Sliders,
     StepForward,
     Trophy,
+    Volume2,
+    VolumeX,
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
+import { soundManager } from "../audio/soundManager.ts";
 import type { SimulationSnapshot } from "../simulation/types.ts";
 
 interface BattleHUDProps {
@@ -40,7 +43,14 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
     onOpenWinnerModal,
 }) => {
     const [logExpanded, setLogExpanded] = useState(false);
+    const [audioSettings, setAudioSettings] = useState(() => soundManager.getSettings());
     const logContainerRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        return soundManager.subscribe((settings) => {
+            setAudioSettings(settings);
+        });
+    }, []);
 
     useEffect(() => {
         if (logContainerRef.current) {
@@ -93,7 +103,10 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                     {snapshot.status === "finished" && onOpenWinnerModal && (
                         <button
                             type="button"
-                            onClick={onOpenWinnerModal}
+                            onClick={() => {
+                                soundManager.playUiClick();
+                                onOpenWinnerModal();
+                            }}
                             className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 transition-colors cursor-pointer"
                         >
                             <Trophy className="w-3.5 h-3.5 text-amber-400" />
@@ -105,7 +118,10 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                 <div className="flex items-center gap-2">
                     <button
                         type="button"
-                        onClick={onTogglePause}
+                        onClick={() => {
+                            soundManager.playUiClick();
+                            onTogglePause();
+                        }}
                         className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded border transition-colors cursor-pointer ${
                             isPaused
                                 ? "bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-600"
@@ -122,7 +138,10 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
 
                     <button
                         type="button"
-                        onClick={onStep}
+                        onClick={() => {
+                            soundManager.playUiClick();
+                            onStep();
+                        }}
                         disabled={!isPaused && snapshot.status === "running"}
                         className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
                         title="Avançar 1 Tick"
@@ -136,7 +155,10 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                             <button
                                 key={s}
                                 type="button"
-                                onClick={() => setSpeed(s)}
+                                onClick={() => {
+                                    soundManager.playUiSwitch();
+                                    setSpeed(s);
+                                }}
                                 className={`px-2 py-0.5 rounded text-[11px] transition-colors cursor-pointer ${
                                     speed === s
                                         ? "bg-neutral-700 text-white font-semibold"
@@ -150,9 +172,50 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 bg-neutral-950 px-2.5 py-1 rounded border border-neutral-800 text-xs">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                soundManager.playUiSwitch();
+                                soundManager.toggleMute();
+                            }}
+                            className="text-neutral-400 hover:text-neutral-200 transition-colors cursor-pointer"
+                            title={audioSettings.muted ? "Ativar Áudio" : "Mutar Áudio"}
+                        >
+                            {audioSettings.muted || audioSettings.masterVolume === 0 ? (
+                                <VolumeX className="w-3.5 h-3.5 text-rose-400" />
+                            ) : (
+                                <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+                            )}
+                        </button>
+                        <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.05"
+                            value={audioSettings.muted ? 0 : audioSettings.masterVolume}
+                            onChange={(e) => {
+                                const val = parseFloat(e.target.value);
+                                soundManager.setMasterVolume(val);
+                                if (audioSettings.muted && val > 0) {
+                                    soundManager.setMuted(false);
+                                }
+                            }}
+                            className="w-16 h-1 bg-neutral-800 accent-emerald-500 rounded cursor-pointer"
+                            title={`Volume: ${Math.round(audioSettings.masterVolume * 100)}%`}
+                            aria-label="Volume Geral"
+                        />
+                        <span className="text-[10px] text-neutral-400 font-mono w-7 text-right">
+                            {audioSettings.muted ? "0%" : `${Math.round(audioSettings.masterVolume * 100)}%`}
+                        </span>
+                    </div>
+
                     <button
                         type="button"
-                        onClick={onRestart}
+                        onClick={() => {
+                            soundManager.playUiClick();
+                            onRestart();
+                        }}
                         className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 transition-colors cursor-pointer"
                         title="Reiniciar partida com os mesmos scripts"
                     >
@@ -162,7 +225,10 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
 
                     <button
                         type="button"
-                        onClick={onReturnToMenu}
+                        onClick={() => {
+                            soundManager.playUiClick();
+                            onReturnToMenu();
+                        }}
                         className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 transition-colors cursor-pointer"
                     >
                         <Sliders className="w-3.5 h-3.5 text-neutral-400" />
@@ -174,9 +240,7 @@ export const BattleHUD: React.FC<BattleHUDProps> = ({
             <footer className="pointer-events-auto flex items-end justify-between gap-4">
                 <div
                     className={`grid gap-2 w-full max-h-[300px] overflow-y-auto pr-1 ${
-                        snapshot.tanks.length <= 4
-                            ? "grid-cols-1 max-w-sm"
-                            : "grid-cols-2 max-w-xl lg:max-w-2xl"
+                        snapshot.tanks.length <= 4 ? "grid-cols-1 max-w-sm" : "grid-cols-2 max-w-xl lg:max-w-2xl"
                     }`}
                 >
                     {snapshot.tanks.map((tank) => {

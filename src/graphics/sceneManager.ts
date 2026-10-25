@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { soundManager } from "../audio/soundManager.ts";
 import type { ArenaConfig, SimEvent, SimulationSnapshot } from "../simulation/types.ts";
 import { ArenaMeshController } from "./arenaMesh.ts";
 import { CameraController } from "./cameraController.ts";
@@ -71,6 +72,8 @@ export class SceneManager {
 
         this.particleManager = new ParticleSystemManager();
         this.scene.add(this.particleManager.group);
+
+        soundManager.init();
 
         this.lastTime = performance.now();
         this.loop();
@@ -216,6 +219,7 @@ export class SceneManager {
 
         if (snapshot.status === "finished" && snapshot.winner && this.cameraController.mode === "combat") {
             this.cameraController.setMode("victory", snapshot.winner, width, height);
+            soundManager.playVictory();
         }
     }
 
@@ -247,6 +251,7 @@ export class SceneManager {
                     } else {
                         this.particleManager.spawnMuzzleBlast(world.x, 12.5, world.z, undefined, power);
                     }
+                    soundManager.playTankFire(power);
                     break;
                 }
 
@@ -267,6 +272,7 @@ export class SceneManager {
                     }
 
                     this.particleManager.spawnTankImpact(world.x, 12, world.z, hitDir, power);
+                    soundManager.playTankImpact(power);
                     break;
                 }
 
@@ -289,11 +295,13 @@ export class SceneManager {
 
                     const power = ev.value ?? 1;
                     this.particleManager.spawnWallImpact(world.x, 10, world.z, wallNormal, power);
+                    soundManager.playWallImpact(power);
                     break;
                 }
 
                 case "tank_destroyed": {
                     this.particleManager.spawnTankDestruction(world.x, 6, world.z);
+                    soundManager.playTankDestruction();
                     break;
                 }
             }
