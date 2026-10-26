@@ -1,5 +1,5 @@
 // ============================================================================
-// COMPILER ARENA - ESTRATÉGIA: AGGRESSIVE STRIKER
+// Arena de Compiladores - ESTRATÉGIA: AGGRESSIVE STRIKER
 // Robô de Ataque: Avanço veloz, pressão constante e rajadas contínuas
 // ============================================================================
 robot AggressiveStriker {

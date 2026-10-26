@@ -1,5 +1,5 @@
 // ============================================================================
-// COMPILER ARENA - DEMONSTRAÇÃO DE ANÁLISE SEMÂNTICA E DIAGNÓSTICOS
+// Arena de Compiladores - DEMONSTRAÇÃO DE ANÁLISE SEMÂNTICA E DIAGNÓSTICOS
 // Este exemplo demonstra como o compilador detecta e reporta múltiplos erros
 // léxicos, sintáticos e semânticos com indicação precisa de linha e coluna:
 // ============================================================================

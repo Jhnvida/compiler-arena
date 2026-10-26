@@ -1,5 +1,5 @@
 // ============================================================================
-// COMPILER ARENA - DEMONSTRAÇÃO DE OTIMIZAÇÕES DE CÓDIGO
+// Arena de Compiladores - DEMONSTRAÇÃO DE OTIMIZAÇÕES DE CÓDIGO
 // Este exemplo foi desenhado especificamente para comprovar na apresentação:
 // 1. Dobra de Constantes (Constant Folding): 10 + 20 * 2 -> 50
 // 2. Simplificação Algébrica (Algebraic Simplification): x * 1 -> x, x + 0 -> x, x * 0 -> 0

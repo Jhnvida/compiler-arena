@@ -5,6 +5,7 @@ import { applyTankMovement, createSimulatedTank, findSafeSpawn, updateTankSensor
 import type {
     ArenaConfig,
     BattleStatus,
+    DamageSourceType,
     Projectile,
     SimEvent,
     SimEventType,
@@ -148,6 +149,90 @@ export class SimulationEngine {
         }
     }
 
+    /**
+     * Aplica dano a um tanque rastreando fidedignamente o causador real (outro robô, arena ou desconhecido).
+     * Atualiza estatísticas, registra último golpe e processa a eliminação se a energia se esgotar.
+     */
+    public applyDamageToTank(
+        targetTank: SimulatedTank,
+        damage: number,
+        source: {
+            type: DamageSourceType;
+            attackerId?: string;
+            projectileId?: string;
+        },
+    ): void {
+        if (!targetTank.isAlive) return;
+
+        targetTank.energy = Math.max(0, targetTank.energy - damage);
+        targetTank.stats.damageReceived += damage;
+        targetTank.lastDamageSource = {
+            type: source.type,
+            attackerId: source.attackerId,
+            damage,
+            tick: this.tick,
+        };
+
+        let attacker: SimulatedTank | undefined;
+        if (source.type === "tank" && source.attackerId) {
+            attacker = this.tanks.find((t) => t.id === source.attackerId);
+            if (attacker) {
+                attacker.stats.damageDealt += damage;
+            }
+        }
+
+        if (targetTank.energy <= 0) {
+            this.handleTankElimination(targetTank, source, attacker);
+        }
+    }
+
+    /**
+     * Processa a eliminação de um tanque com a atribuição correta e precisa do responsável.
+     */
+    public handleTankElimination(
+        victim: SimulatedTank,
+        source?: {
+            type?: DamageSourceType;
+            attackerId?: string;
+        },
+        attackerOverride?: SimulatedTank,
+    ): void {
+        if (!victim.isAlive) return;
+
+        victim.isAlive = false;
+        victim.energy = 0;
+
+        const effectiveSourceType = source?.type ?? victim.lastDamageSource?.type ?? "unknown";
+        const attackerId = source?.attackerId ?? victim.lastDamageSource?.attackerId;
+        const resolvedAttacker =
+            attackerOverride ?? (attackerId ? this.tanks.find((t) => t.id === attackerId) : undefined);
+
+        let finalSourceType: DamageSourceType = effectiveSourceType;
+        let message: string;
+
+        if (resolvedAttacker) {
+            finalSourceType = "tank";
+            resolvedAttacker.stats.kills++;
+            message = `${resolvedAttacker.name} eliminou ${victim.name}`;
+        } else if (effectiveSourceType === "arena") {
+            finalSourceType = "arena";
+            message = `${victim.name} foi eliminado pela arena`;
+        } else {
+            finalSourceType = "unknown";
+            message = `${victim.name} foi destruído`;
+        }
+
+        this.emitEvent("tank_destroyed", message, {
+            tankId: victim.id,
+            targetTankId: victim.id,
+            victimId: victim.id,
+            attackerId: resolvedAttacker?.id,
+            sourceType: finalSourceType,
+            x: victim.x,
+            y: victim.y,
+        });
+    }
+
     public step(): SimulationSnapshot {
         if (this.status === "idle") {
             this.status = "running";
@@ -194,21 +279,22 @@ export class SimulationEngine {
                     hitTank = true;
                     proj.alive = false;
 
-                    tank.energy = Math.max(0, tank.energy - proj.damage);
-                    tank.stats.damageReceived += proj.damage;
-
                     const owner = this.tanks.find((t) => t.id === proj.ownerId);
                     if (owner) {
                         owner.stats.shotsHit++;
-                        owner.stats.damageDealt += proj.damage;
                     }
+
+                    const remainingEnergy = Math.max(0, tank.energy - proj.damage);
 
                     this.emitEvent(
                         "projectile_hit_tank",
-                        `${owner?.name ?? "Projétil"} acertou ${tank.name} causando ${proj.damage} de dano (${tank.energy} HP restantes)`,
+                        `${owner?.name ?? "Projétil"} acertou ${tank.name} causando ${proj.damage} de dano (${remainingEnergy} HP restantes)`,
                         {
                             tankId: proj.ownerId,
                             targetTankId: tank.id,
+                            attackerId: proj.ownerId,
+                            victimId: tank.id,
+                            sourceType: owner ? "tank" : "unknown",
                             projectileId: proj.id,
                             value: proj.damage,
                             x: tank.x,
@@ -216,17 +302,12 @@ export class SimulationEngine {
                         },
                     );
 
-                    if (tank.energy <= 0) {
-                        tank.isAlive = false;
-                        if (owner) {
-                            owner.stats.kills++;
-                        }
-                        this.emitEvent("tank_destroyed", `O tanque ${tank.name} foi destruído`, {
-                            tankId: tank.id,
-                            x: tank.x,
-                            y: tank.y,
-                        });
-                    }
+                    this.applyDamageToTank(tank, proj.damage, {
+                        type: owner ? "tank" : "unknown",
+                        attackerId: owner?.id,
+                        projectileId: proj.id,
+                    });
+
                     break;
                 }
             }
@@ -398,6 +479,7 @@ export class SimulationEngine {
                 },
                 stats: { ...t.stats },
                 lastAction: t.lastAction ? { ...t.lastAction } : null,
+                lastDamageSource: t.lastDamageSource ? { ...t.lastDamageSource } : null,
             })),
             projectiles: this.projectiles.map((p) => ({ ...p })),
             recentEvents: [...this.events],
@@ -410,6 +492,7 @@ export class SimulationEngine {
                           enemy: { ...this.winner.sensors.enemy },
                       },
                       stats: { ...this.winner.stats },
+                      lastDamageSource: this.winner.lastDamageSource ? { ...this.winner.lastDamageSource } : null,
                   }
                 : null,
             isDraw: this.isDraw,

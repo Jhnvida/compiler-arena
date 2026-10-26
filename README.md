@@ -1,4 +1,4 @@
-# Compiler Arena ⚔️🤖
+# Arena de Compiladores ⚔️🤖
 
 > **Centro Universitário de Jaguariúna — UNIFAJ**  
 > **Disciplina:** Compiladores  
@@ -22,7 +22,7 @@
 
 ## 🎯 Visão Geral
 
-O **Compiler Arena** é um ambiente acadêmico completo para ensino e aplicação prática de **Teoria de Compiladores**. O projeto implementa:
+O **Arena de Compiladores** é um ambiente acadêmico completo para ensino e aplicação prática de **Teoria de Compiladores**. O projeto implementa:
 
 - **Um compilador completo e funcional** para a linguagem proprietária **TankScript**, composto por todas as etapas canônicas: Análise Léxica, Análise Sintática (com construção de AST), Análise Semântica (tabela de símbolos e verificação de tipos), Geração de Código Intermediário (TAC), Otimização de Código e Geração de Bytecode.
 - **Uma Máquina Virtual (VM) baseada em pilha**, executada por ticks determinísticos, isolada por robô e com limite de instruções (_gas limit_) para prevenir laços infinitos sem recorrer a `eval()` ou interpretadores nativos.

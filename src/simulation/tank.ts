@@ -57,6 +57,7 @@ export function createSimulatedTank(
         vm,
         lastAction: null,
         lastExecutionResult: null,
+        lastDamageSource: null,
         stats: {
             shotsFired: 0,
             shotsHit: 0,
@@ -75,7 +76,7 @@ export function findSafeSpawn(
     width: number,
     height: number,
     radius: number,
-    maxAttempts: number = 400,
+    maxAttempts = 500,
 ): { x: number; y: number; angle: number } {
     const margin = radius + 48;
     const minX = margin;
@@ -83,7 +84,12 @@ export function findSafeSpawn(
     const minY = margin;
     const maxY = height - margin;
 
-    const baseSeparation = existingTanks.length <= 1 ? 250 : existingTanks.length <= 3 ? 205 : Math.max(140, 205 - (existingTanks.length - 3) * 10);
+    const baseSeparation =
+        existingTanks.length <= 1
+            ? 250
+            : existingTanks.length <= 3
+              ? 205
+              : Math.max(140, 205 - (existingTanks.length - 3) * 10);
     const minFloorSeparation = existingTanks.length <= 3 ? 200 : 110;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {

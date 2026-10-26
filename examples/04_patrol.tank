@@ -1,5 +1,5 @@
 // ============================================================================
-// COMPILER ARENA - ESTRATÉGIA: WANDERING PATROL
+// Arena de Compiladores - ESTRATÉGIA: WANDERING PATROL
 // Robô Sentinela: Movimentação defensiva contínua e contra-ataque reativo
 // ============================================================================
 robot WanderingPatrol {

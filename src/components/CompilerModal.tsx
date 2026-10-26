@@ -17,286 +17,207 @@ export const CompilerModal: React.FC<CompilerModalProps> = ({ isOpen, onClose, r
     if (!isOpen || !result) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150">
-            <div className="relative w-full max-w-5xl h-[86vh] bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl flex flex-col overflow-hidden text-neutral-100">
-                <div className="flex items-center justify-between px-5 py-3.5 border-b border-neutral-800 bg-neutral-950/70">
-                    <div className="flex items-center gap-3">
-                        <Terminal className="w-5 h-5 text-neutral-400" />
-                        <div>
-                            <div className="flex items-center gap-2.5">
-                                <h2 className="text-sm font-semibold tracking-wide text-white">
-                                    Inspetor de Compilação: {tankName}
-                                </h2>
-                                {result.success ? (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800/60">
-                                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                                        <span>Compilado com Sucesso</span>
-                                    </span>
-                                ) : (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded bg-rose-950/60 text-rose-400 border border-rose-800/60">
-                                        <AlertTriangle className="w-3 h-3 text-rose-400" />
-                                        <span>{result.errors.length} Erro(s)</span>
-                                    </span>
-                                )}
-                            </div>
-                            <p className="text-[11px] text-neutral-500 font-mono mt-0.5">
-                                Pipeline: Lexer → Parser AST → Semântica → TAC → Otimizador → Bytecode VM
-                            </p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150 font-sans select-none text-neutral-100">
+            <div className="relative w-full max-w-5xl h-[84vh] max-h-[780px] bg-neutral-950 border border-neutral-800 rounded shadow-2xl flex flex-col overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-2.5 border-b border-neutral-800 bg-neutral-950">
+                    <div className="flex items-center gap-2.5">
+                        <Terminal className="w-4 h-4 text-emerald-400" />
+                        <div className="flex items-center gap-2">
+                            <h2 className="text-xs font-bold tracking-wider uppercase text-white font-mono">
+                                Inspetor de Compilação {"//"} {tankName}
+                            </h2>
+                            {result.success ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono rounded bg-emerald-950/60 text-emerald-300 border border-emerald-800/60">
+                                    <CheckCircle2 className="w-2.5 h-2.5" />
+                                    <span>COMPILADO</span>
+                                </span>
+                            ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono rounded bg-rose-950/60 text-rose-300 border border-rose-800/60">
+                                    <AlertTriangle className="w-2.5 h-2.5" />
+                                    <span>{result.errors.length} ERRO(S)</span>
+                                </span>
+                            )}
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1.5 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded transition-colors cursor-pointer"
-                        title="Fechar (Esc)"
+                        className="p-1 text-neutral-400 hover:text-white hover:bg-neutral-900 rounded transition-colors cursor-pointer"
+                        title="Fechar [Esc]"
                     >
                         <X className="w-4 h-4" />
                     </button>
                 </div>
 
-                <div className="flex items-center gap-1 px-5 pt-2 border-b border-neutral-800 bg-neutral-950/40">
+                <div className="flex items-center gap-1 px-4 pt-1.5 border-b border-neutral-850 bg-neutral-950/60 overflow-x-auto">
                     <button
                         onClick={() => setActiveTab("ir")}
-                        className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
+                        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-t border-t border-x transition-colors cursor-pointer ${
                             activeTab === "ir"
-                                ? "border-neutral-200 text-white bg-neutral-800/40"
-                                : "border-transparent text-neutral-400 hover:text-neutral-200"
+                                ? "bg-neutral-900 border-neutral-700 text-white"
+                                : "bg-transparent border-transparent text-neutral-400 hover:text-neutral-200"
                         }`}
                     >
                         <Code2 className="w-3.5 h-3.5" />
-                        <span>Código Intermediário (TAC)</span>
+                        <span>TAC (Código Intermediário)</span>
                     </button>
+
                     <button
                         onClick={() => setActiveTab("bytecode")}
-                        className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
+                        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-t border-t border-x transition-colors cursor-pointer ${
                             activeTab === "bytecode"
-                                ? "border-neutral-200 text-white bg-neutral-800/40"
-                                : "border-transparent text-neutral-400 hover:text-neutral-200"
+                                ? "bg-neutral-900 border-neutral-700 text-white"
+                                : "bg-transparent border-transparent text-neutral-400 hover:text-neutral-200"
                         }`}
                     >
                         <Cpu className="w-3.5 h-3.5" />
                         <span>Bytecode VM</span>
                     </button>
+
                     <button
                         onClick={() => setActiveTab("symbols")}
-                        className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
+                        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-t border-t border-x transition-colors cursor-pointer ${
                             activeTab === "symbols"
-                                ? "border-neutral-200 text-white bg-neutral-800/40"
-                                : "border-transparent text-neutral-400 hover:text-neutral-200"
+                                ? "bg-neutral-900 border-neutral-700 text-white"
+                                : "bg-transparent border-transparent text-neutral-400 hover:text-neutral-200"
                         }`}
                     >
                         <Layers className="w-3.5 h-3.5" />
-                        <span>Tabela de Símbolos</span>
+                        <span>Símbolos</span>
                     </button>
+
                     <button
                         onClick={() => setActiveTab("ast")}
-                        className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
+                        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-t border-t border-x transition-colors cursor-pointer ${
                             activeTab === "ast"
-                                ? "border-neutral-200 text-white bg-neutral-800/40"
-                                : "border-transparent text-neutral-400 hover:text-neutral-200"
+                                ? "bg-neutral-900 border-neutral-700 text-white"
+                                : "bg-transparent border-transparent text-neutral-400 hover:text-neutral-200"
                         }`}
                     >
                         <GitBranch className="w-3.5 h-3.5" />
-                        <span>Árvore Sintática (AST)</span>
+                        <span>AST</span>
                     </button>
+
                     <button
                         onClick={() => setActiveTab("tokens")}
-                        className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
+                        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-t border-t border-x transition-colors cursor-pointer ${
                             activeTab === "tokens"
-                                ? "border-neutral-200 text-white bg-neutral-800/40"
-                                : "border-transparent text-neutral-400 hover:text-neutral-200"
+                                ? "bg-neutral-900 border-neutral-700 text-white"
+                                : "bg-transparent border-transparent text-neutral-400 hover:text-neutral-200"
                         }`}
                     >
                         <ListTree className="w-3.5 h-3.5" />
-                        <span>Tokens ({result.tokens.length})</span>
+                        <span>Tokens</span>
                     </button>
+
                     {result.errors.length > 0 && (
                         <button
                             onClick={() => setActiveTab("errors")}
-                            className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
+                            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-t border-t border-x transition-colors cursor-pointer ${
                                 activeTab === "errors"
-                                    ? "border-rose-500 text-rose-300 bg-rose-950/20"
-                                    : "border-transparent text-rose-400 hover:text-rose-200"
+                                    ? "bg-rose-950/50 border-rose-800 text-rose-200"
+                                    : "bg-transparent border-transparent text-rose-400 hover:text-rose-300"
                             }`}
                         >
-                            <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+                            <AlertTriangle className="w-3.5 h-3.5" />
                             <span>Erros ({result.errors.length})</span>
                         </button>
                     )}
                 </div>
 
-                <div className="flex-1 p-5 overflow-y-auto font-mono text-xs">
+                <div className="flex-1 p-4 overflow-y-auto bg-neutral-950 font-mono text-xs leading-relaxed text-neutral-200">
                     {activeTab === "ir" && (
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-4 gap-3 p-3 bg-neutral-950 rounded border border-neutral-800 text-xs">
-                                <div>
-                                    <span className="text-neutral-500 text-[11px]">Total Otimizações</span>
-                                    <p className="text-base font-bold text-neutral-200">
-                                        {result.optimizationStats.constantFolds +
-                                            result.optimizationStats.algebraicSimplifications +
-                                            result.optimizationStats.constantPropagations +
-                                            result.optimizationStats.deadCodeRemoved}
-                                    </p>
-                                </div>
-                                <div>
-                                    <span className="text-neutral-500 text-[11px]">Constant Folding</span>
-                                    <p className="text-base font-bold text-emerald-400">
-                                        {result.optimizationStats.constantFolds}
-                                    </p>
-                                </div>
-                                <div>
-                                    <span className="text-neutral-500 text-[11px]">Simplificação Algébrica</span>
-                                    <p className="text-base font-bold text-amber-400">
-                                        {result.optimizationStats.algebraicSimplifications}
-                                    </p>
-                                </div>
-                                <div>
-                                    <span className="text-neutral-500 text-[11px]">Dead Code Eliminado</span>
-                                    <p className="text-base font-bold text-neutral-400">
-                                        {result.optimizationStats.deadCodeRemoved}
-                                    </p>
-                                </div>
+                        <div className="space-y-2">
+                            <div className="text-[11px] text-neutral-400 font-sans mb-2">
+                                Instruções TAC Otimizadas de Três Endereços:
                             </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-neutral-950 p-3.5 rounded border border-neutral-800">
-                                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-neutral-800 text-[11px] text-neutral-400 font-sans">
-                                        <span className="font-semibold text-neutral-300">IR Bruto (TAC)</span>
-                                        <span>{result.rawIR.length} instruções</span>
-                                    </div>
-                                    <pre className="text-[11px] text-neutral-300 overflow-x-auto whitespace-pre font-mono leading-relaxed max-h-[46vh]">
-                                        {result.rawIRText || "(Vazio)"}
-                                    </pre>
-                                </div>
-
-                                <div className="bg-neutral-950 p-3.5 rounded border border-neutral-800">
-                                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-neutral-800 text-[11px] text-neutral-400 font-sans">
-                                        <span className="font-semibold text-emerald-400">IR Otimizado (TAC)</span>
-                                        <span>{result.optimizedIR.length} instruções</span>
-                                    </div>
-                                    <pre className="text-[11px] text-emerald-300/90 overflow-x-auto whitespace-pre font-mono leading-relaxed max-h-[46vh]">
-                                        {result.optimizedIRText || "(Vazio)"}
-                                    </pre>
-                                </div>
-                            </div>
+                            <pre className="p-3 bg-neutral-900/60 border border-neutral-850 rounded text-[11px] overflow-x-auto text-emerald-300 font-mono selection:bg-neutral-700">
+                                {result.optimizedIRText || result.rawIRText || "Nenhum TAC gerado."}
+                            </pre>
                         </div>
                     )}
 
                     {activeTab === "bytecode" && (
-                        <div className="bg-neutral-950 p-4 rounded border border-neutral-800">
-                            <div className="flex items-center justify-between pb-2 mb-3 border-b border-neutral-800 text-xs text-neutral-400 font-sans">
-                                <span className="font-semibold text-neutral-300">Desmontagem de Bytecode</span>
-                                <span>
-                                    {result.bytecode?.instructions.length ?? 0} instruções /{" "}
-                                    {result.bytecode?.variableNames.length ?? 0} variáveis
-                                </span>
+                        <div className="space-y-2">
+                            <div className="text-[11px] text-neutral-400 font-sans mb-2">
+                                Desmontagem do Bytecode binário executável pela VM:
                             </div>
-                            <pre className="text-xs text-neutral-300 overflow-x-auto whitespace-pre font-mono leading-relaxed max-h-[58vh]">
-                                {result.bytecodeDisassembly || "(Bytecode não gerado devido a erros)"}
+                            <pre className="p-3 bg-neutral-900/60 border border-neutral-850 rounded text-[11px] overflow-x-auto text-neutral-200 font-mono selection:bg-neutral-700">
+                                {result.bytecodeDisassembly && result.bytecodeDisassembly.length > 0
+                                    ? result.bytecodeDisassembly.join("\n")
+                                    : "Nenhum bytecode gerado."}
                             </pre>
                         </div>
                     )}
 
                     {activeTab === "symbols" && (
-                        <div className="bg-neutral-950 p-4 rounded border border-neutral-800">
-                            <div className="pb-2 mb-3 border-b border-neutral-800 text-xs text-neutral-400 font-sans font-semibold">
-                                Símbolos Registrados
+                        <div className="space-y-2">
+                            <div className="text-[11px] text-neutral-400 font-sans mb-2">
+                                Tabela de símbolos e variáveis alocadas:
                             </div>
-                            {result.symbols.length === 0 ? (
-                                <p className="text-neutral-500 italic text-xs">Nenhum símbolo declarado no escopo.</p>
-                            ) : (
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left text-xs border-collapse font-sans">
-                                        <thead>
-                                            <tr className="border-b border-neutral-800 text-neutral-400 text-[11px]">
-                                                <th className="py-2 px-3">Nome</th>
-                                                <th className="py-2 px-3">Nome Único</th>
-                                                <th className="py-2 px-3">Tipo</th>
-                                                <th className="py-2 px-3">Escopo</th>
-                                                <th className="py-2 px-3">Inicializada?</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-neutral-800/60 font-mono text-xs">
-                                            {result.symbols.map((sym, idx) => (
-                                                <tr key={idx} className="hover:bg-neutral-800/40">
-                                                    <td className="py-2 px-3 text-neutral-200 font-semibold">
-                                                        {sym.name}
-                                                    </td>
-                                                    <td className="py-2 px-3 text-neutral-400">{sym.uniqueName}</td>
-                                                    <td className="py-2 px-3 text-neutral-300">{sym.type}</td>
-                                                    <td className="py-2 px-3 text-neutral-400">
-                                                        Nível {sym.scopeLevel} (ID {sym.scopeId})
-                                                    </td>
-                                                    <td className="py-2 px-3 text-neutral-400">
-                                                        {sym.isInitialized ? "Sim" : "Não"}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
+                            <pre className="p-3 bg-neutral-900/60 border border-neutral-850 rounded text-[11px] overflow-x-auto text-neutral-300 font-mono selection:bg-neutral-700">
+                                {result.symbols
+                                    ? JSON.stringify(result.symbols, null, 2)
+                                    : "Nenhum símbolo registrado."}
+                            </pre>
                         </div>
                     )}
 
                     {activeTab === "ast" && (
-                        <div className="bg-neutral-950 p-4 rounded border border-neutral-800">
-                            <div className="pb-2 mb-3 border-b border-neutral-800 text-xs text-neutral-400 font-sans font-semibold">
-                                Representação JSON da Abstract Syntax Tree (AST)
+                        <div className="space-y-2">
+                            <div className="text-[11px] text-neutral-400 font-sans mb-2">
+                                Árvore Sintática Abstrata (Abstract Syntax Tree):
                             </div>
-                            <pre className="text-xs text-neutral-300 overflow-x-auto whitespace-pre font-mono max-h-[58vh]">
-                                {result.ast ? JSON.stringify(result.ast, null, 2) : "(AST Indisponível)"}
+                            <pre className="p-3 bg-neutral-900/60 border border-neutral-850 rounded text-[11px] overflow-x-auto text-neutral-300 font-mono selection:bg-neutral-700">
+                                {result.ast ? JSON.stringify(result.ast, null, 2) : "Nenhuma AST gerada."}
                             </pre>
                         </div>
                     )}
 
                     {activeTab === "tokens" && (
-                        <div className="bg-neutral-950 p-4 rounded border border-neutral-800">
-                            <div className="pb-2 mb-3 border-b border-neutral-800 text-xs text-neutral-400 font-sans font-semibold">
-                                Fluxo de Tokens Léxicos ({result.tokens.length})
+                        <div className="space-y-2">
+                            <div className="text-[11px] text-neutral-400 font-sans mb-2">
+                                Sequência de Tokens produzida pelo analisador léxico:
                             </div>
-                            <div className="overflow-x-auto max-h-[58vh]">
-                                <table className="w-full text-left text-xs border-collapse font-sans">
-                                    <thead>
-                                        <tr className="border-b border-neutral-800 text-neutral-400 text-[11px]">
-                                            <th className="py-1.5 px-3">Linha:Coluna</th>
-                                            <th className="py-1.5 px-3">Tipo do Token</th>
-                                            <th className="py-1.5 px-3">Valor / Lexema</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-neutral-800/60 font-mono text-xs">
-                                        {result.tokens.map((tok, idx) => (
-                                            <tr key={idx} className="hover:bg-neutral-800/40">
-                                                <td className="py-1.5 px-3 text-neutral-500">
-                                                    {tok.line}:{tok.column}
-                                                </td>
-                                                <td className="py-1.5 px-3 text-neutral-300">{tok.type}</td>
-                                                <td className="py-1.5 px-3 text-emerald-400">{tok.lexeme}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                            <pre className="p-3 bg-neutral-900/60 border border-neutral-850 rounded text-[11px] overflow-x-auto text-neutral-300 font-mono selection:bg-neutral-700">
+                                {result.tokens
+                                    ? result.tokens
+                                          .map((tok) => `[${tok.type}] '${tok.lexeme}' (L${tok.line}:C${tok.column})`)
+                                          .join("\n")
+                                    : "Nenhum token disponível."}
+                            </pre>
                         </div>
                     )}
 
                     {activeTab === "errors" && (
                         <div className="space-y-2">
-                            {result.errors.map((err, idx) => (
-                                <div
-                                    key={idx}
-                                    className="p-3 bg-neutral-950 rounded border border-rose-900/60 text-xs font-sans"
-                                >
-                                    <div className="flex items-center gap-2 text-rose-400 font-semibold mb-1">
-                                        <AlertTriangle className="w-4 h-4 shrink-0 text-rose-500" />
-                                        <span>
-                                            Erro na linha {err.line}, coluna {err.column}
-                                        </span>
+                            <div className="text-[11px] text-rose-400 font-sans mb-2 font-semibold">
+                                Lista de erros identificados na análise:
+                            </div>
+                            <div className="space-y-1.5">
+                                {result.errors.map((err, i) => (
+                                    <div
+                                        key={i}
+                                        className="p-2.5 rounded bg-rose-950/40 border border-rose-800/60 text-rose-200 text-xs"
+                                    >
+                                        <div className="font-bold text-rose-300">
+                                            Linha {err.line}, Coluna {err.column}:
+                                        </div>
+                                        <div className="mt-0.5">{err.message}</div>
                                     </div>
-                                    <p className="text-neutral-300 font-mono text-[11px] pl-6">{err.message}</p>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     )}
+                </div>
+
+                <div className="flex items-center justify-between px-4 py-2 border-t border-neutral-800 bg-neutral-950 text-[11px] font-mono text-neutral-500">
+                    <span>STATUS: {result.success ? "OPERAÇÃO CONCLUÍDA" : "FALHA NA COMPILAÇÃO"}</span>
+                    <button
+                        onClick={onClose}
+                        className="px-3 py-1 bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 rounded text-xs transition-colors cursor-pointer"
+                    >
+                        Fechar
+                    </button>
                 </div>
             </div>
         </div>

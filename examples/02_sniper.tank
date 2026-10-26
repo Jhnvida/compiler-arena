@@ -1,5 +1,5 @@
 // ============================================================================
-// COMPILER ARENA - ESTRATÉGIA: SNIPER SCOUT
+// Arena de Compiladores - ESTRATÉGIA: SNIPER SCOUT
 // Robô Atirador: Combate de longo alcance, recuo defensivo e disparos de precisão
 // ============================================================================
 robot SniperScout {

@@ -1,5 +1,5 @@
 // ============================================================================
-// COMPILER ARENA - ESTRATÉGIA: HUNTER
+// Arena de Compiladores - ESTRATÉGIA: HUNTER
 // Robô Caçador: Varredura de radar contínua, perseguição e disparos escalonados
 // ============================================================================
 robot Hunter {

@@ -51,9 +51,18 @@ export class SoundManager {
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     this.settings = {
-                        masterVolume: typeof parsed.masterVolume === "number" ? Math.max(0, Math.min(1, parsed.masterVolume)) : DEFAULT_SETTINGS.masterVolume,
-                        sfxVolume: typeof parsed.sfxVolume === "number" ? Math.max(0, Math.min(1, parsed.sfxVolume)) : DEFAULT_SETTINGS.sfxVolume,
-                        uiVolume: typeof parsed.uiVolume === "number" ? Math.max(0, Math.min(1, parsed.uiVolume)) : DEFAULT_SETTINGS.uiVolume,
+                        masterVolume:
+                            typeof parsed.masterVolume === "number"
+                                ? Math.max(0, Math.min(1, parsed.masterVolume))
+                                : DEFAULT_SETTINGS.masterVolume,
+                        sfxVolume:
+                            typeof parsed.sfxVolume === "number"
+                                ? Math.max(0, Math.min(1, parsed.sfxVolume))
+                                : DEFAULT_SETTINGS.sfxVolume,
+                        uiVolume:
+                            typeof parsed.uiVolume === "number"
+                                ? Math.max(0, Math.min(1, parsed.uiVolume))
+                                : DEFAULT_SETTINGS.uiVolume,
                         muted: typeof parsed.muted === "boolean" ? parsed.muted : DEFAULT_SETTINGS.muted,
                     };
                 }
@@ -68,8 +77,7 @@ export class SoundManager {
             if (typeof window !== "undefined" && window.localStorage) {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(this.settings));
             }
-        } catch {
-        }
+        } catch {}
         this.notifyListeners();
     }
 
@@ -93,7 +101,9 @@ export class SoundManager {
     public init(): void {
         if (this.isInitialized || typeof window === "undefined") return;
 
-        const AudioCtxClass = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        const AudioCtxClass =
+            window.AudioContext ||
+            (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
         if (!AudioCtxClass) return;
 
         try {
@@ -139,9 +149,12 @@ export class SoundManager {
 
         const unlock = () => {
             if (this.ctx && this.ctx.state === "suspended") {
-                this.ctx.resume().then(() => {
-                    this.isUnlocked = true;
-                }).catch(() => {});
+                this.ctx
+                    .resume()
+                    .then(() => {
+                        this.isUnlocked = true;
+                    })
+                    .catch(() => {});
             } else {
                 this.isUnlocked = true;
             }
@@ -199,8 +212,7 @@ export class SoundManager {
                     const audioBuf = await this.ctx.decodeAudioData(arrayBuf);
                     this.audioBuffers.set(file, audioBuf);
                 }
-            } catch {
-            }
+            } catch {}
         }
     }
 
@@ -276,7 +288,6 @@ export class SoundManager {
         }
     }
 
-
     public playTankFire(power: number = 1): void {
         const file = power === 1 ? "laser_small.ogg" : power === 2 ? "blaster.ogg" : "laser_large.ogg";
         const vol = power === 1 ? 0.9 : power === 2 ? 1.0 : 1.15;
@@ -347,7 +358,6 @@ export class SoundManager {
             cooldownMs: 30,
         });
     }
-
 
     public setMasterVolume(volume: number): void {
         this.settings.masterVolume = Math.max(0, Math.min(1, volume));

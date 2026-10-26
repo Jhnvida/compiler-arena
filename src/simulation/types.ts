@@ -35,6 +35,15 @@ export interface TankStats {
     kills: number;
 }
 
+export type DamageSourceType = "tank" | "arena" | "unknown";
+
+export interface LastDamageSource {
+    type: DamageSourceType;
+    attackerId?: string;
+    damage: number;
+    tick: number;
+}
+
 export interface SimulatedTank {
     id: string;
     name: string;
@@ -50,6 +59,7 @@ export interface SimulatedTank {
     vm: VirtualMachine;
     lastAction: TankAction | null;
     lastExecutionResult: VMExecutionResult | null;
+    lastDamageSource?: LastDamageSource | null;
     stats: TankStats;
     cooldown: number;
     sensors: TankSensors;
@@ -88,6 +98,9 @@ export interface SimEvent {
     type: SimEventType;
     tankId?: string;
     targetTankId?: string;
+    attackerId?: string;
+    victimId?: string;
+    sourceType?: DamageSourceType;
     projectileId?: string;
     x?: number;
     y?: number;
